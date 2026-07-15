@@ -7,9 +7,13 @@ import { Livro } from "@/types/Livro";
 
 interface LivroProps {
   livro: Livro;
+  onEmprestar: (id: number) => void;
 }
 
-export default function LivroCard({ livro }: LivroProps) {
+export default function LivroCard({
+  livro,
+  onEmprestar,
+}: LivroProps) {
   async function excluirLivro() {
     const confirmar = confirm(
       `Deseja excluir "${livro.nome}"?`
@@ -81,12 +85,12 @@ export default function LivroCard({ livro }: LivroProps) {
 
         <div className="grid grid-cols-1 gap-3 mt-6">
 
-          <Link
-            href={`/emprestimos?livro=${livro.id}`}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 text-center font-semibold"
+          <button
+            onClick={() => onEmprestar(livro.id)}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold"
           >
             📤 Emprestar
-          </Link>
+          </button>
 
           <div className="grid grid-cols-2 gap-3">
 
