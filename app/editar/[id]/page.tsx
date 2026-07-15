@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import FormLivro from "@/components/FormLivro";
 
 export default function EditarLivro() {
   const { id } = useParams();
@@ -57,15 +58,15 @@ export default function EditarLivro() {
 
     if (error) {
       alert("Erro ao atualizar.");
+      console.log(error);
       return;
     }
 
-    alert("Livro atualizado com sucesso!");
     router.push("/");
   }
 
   return (
-    <main className="min-h-screen bg-blue-50 flex justify-center py-10">
+    <main className="min-h-screen bg-blue-50 flex justify-center py-10 px-4">
 
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-2xl">
 
@@ -73,58 +74,26 @@ export default function EditarLivro() {
           ✏️ Editar Livro
         </h1>
 
-        <input
-          className="w-full border rounded-lg p-3 mb-4"
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-        />
-
-        <input
-          className="w-full border rounded-lg p-3 mb-4"
-          placeholder="Autor"
-          value={autor}
-          onChange={(e) => setAutor(e.target.value)}
-        />
-
-        <input
-          className="w-full border rounded-lg p-3 mb-4"
-          placeholder="Categoria"
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
-        />
-
-        <input
-          className="w-full border rounded-lg p-3 mb-4"
-          placeholder="Faixa etária"
-          value={faixaEtaria}
-          onChange={(e) => setFaixaEtaria(e.target.value)}
-        />
-
-        <input
-          type="number"
-          className="w-full border rounded-lg p-3 mb-4"
-          value={quantidade}
-          onChange={(e) => setQuantidade(Number(e.target.value))}
-        />
-
-        <input
-          className="w-full border rounded-lg p-3 mb-4"
-          placeholder="Local"
-          value={local}
-          onChange={(e) => setLocal(e.target.value)}
-        />
-
-        <input
-          className="w-full border rounded-lg p-3 mb-6"
-          placeholder="URL da capa"
-          value={capa}
-          onChange={(e) => setCapa(e.target.value)}
+        <FormLivro
+          nome={nome}
+          setNome={setNome}
+          autor={autor}
+          setAutor={setAutor}
+          categoria={categoria}
+          setCategoria={setCategoria}
+          faixaEtaria={faixaEtaria}
+          setFaixaEtaria={setFaixaEtaria}
+          quantidade={quantidade}
+          setQuantidade={setQuantidade}
+          local={local}
+          setLocal={setLocal}
+          capa={capa}
+          setCapa={setCapa}
         />
 
         <button
           onClick={salvarAlteracoes}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-bold"
+          className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-bold text-lg"
         >
           💾 Salvar Alterações
         </button>
