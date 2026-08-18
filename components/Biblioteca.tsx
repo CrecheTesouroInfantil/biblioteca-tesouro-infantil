@@ -3,6 +3,7 @@
 import { useState } from "react";
 import LivroCard from "./LivroCard";
 import EmprestimoModal from "./EmprestimoModal";
+import ReservaModal from "./ReservaModal";
 
 interface BibliotecaProps {
   livros: any[];
@@ -11,12 +12,31 @@ interface BibliotecaProps {
 export default function Biblioteca({
   livros,
 }: BibliotecaProps) {
-  const [modalAberto, setModalAberto] = useState(false);
-  const [livroSelecionado, setLivroSelecionado] = useState<number | null>(null);
+  const [modalEmprestimo, setModalEmprestimo] = useState(false);
+  const [modalReserva, setModalReserva] = useState(false);
+
+  const [livroSelecionado, setLivroSelecionado] = useState<number | null>(
+    null
+  );
 
   function abrirEmprestimo(id: number) {
     setLivroSelecionado(id);
-    setModalAberto(true);
+    setModalEmprestimo(true);
+  }
+
+  function abrirReserva(id: number) {
+    setLivroSelecionado(id);
+    setModalReserva(true);
+  }
+
+  function fecharEmprestimo() {
+    setModalEmprestimo(false);
+    setLivroSelecionado(null);
+  }
+
+  function fecharReserva() {
+    setModalReserva(false);
+    setLivroSelecionado(null);
   }
 
   if (livros.length === 0) {
@@ -30,18 +50,27 @@ export default function Biblioteca({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+
         {livros.map((livro) => (
           <LivroCard
             key={livro.id}
             livro={livro}
             onEmprestar={abrirEmprestimo}
+            onReservar={abrirReserva}
           />
         ))}
+
       </div>
 
       <EmprestimoModal
-        aberto={modalAberto}
-        fechar={() => setModalAberto(false)}
+        aberto={modalEmprestimo}
+        fechar={fecharEmprestimo}
+        livroId={livroSelecionado}
+      />
+
+      <ReservaModal
+        aberto={modalReserva}
+        fechar={fecharReserva}
         livroId={livroSelecionado}
       />
     </>

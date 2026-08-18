@@ -8,11 +8,13 @@ import { Livro } from "@/app/types/Livro";
 interface LivroProps {
   livro: Livro;
   onEmprestar: (id: number) => void;
+  onReservar: (id: number) => void;
 }
 
 export default function LivroCard({
   livro,
   onEmprestar,
+  onReservar,
 }: LivroProps) {
   async function excluirLivro() {
     const confirmar = confirm(
@@ -34,6 +36,8 @@ export default function LivroCard({
 
     window.location.reload();
   }
+
+  const disponivel = (livro.quantidade ?? 0) > 0;
 
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
@@ -94,15 +98,27 @@ export default function LivroCard({
 
         <div className="grid grid-cols-1 gap-3 mt-6">
 
-          <button
-            onClick={() => onEmprestar(livro.id)}
-            disabled={(livro.quantidade ?? 0) <= 0}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl py-3 font-semibold"
-          >
-            {(livro.quantidade ?? 0) <= 0
-              ? "📕 Indisponível"
-              : "📤 Emprestar"}
-          </button>
+          {disponivel ? (
+            <button
+              onClick={() => onEmprestar(livro.id)}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold"
+            >
+              📤 Emprestar
+            </button>
+          ) : (
+            <div className="bg-red-100 text-red-700 rounded-xl py-3 text-center font-bold">
+              📕 Livro indisponível
+            </div>
+          )}
+
+          {!disponivel && (
+            <button
+              onClick={() => onReservar(livro.id)}
+              className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-3 font-bold"
+            >
+              📌 Reservar livro
+            </button>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
 

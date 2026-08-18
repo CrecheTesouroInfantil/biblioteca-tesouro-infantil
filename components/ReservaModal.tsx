@@ -25,8 +25,10 @@ export default function ReservaModal({
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
-    buscarTurmas();
-  }, []);
+    if (aberto) {
+      buscarTurmas();
+    }
+  }, [aberto]);
 
   async function buscarTurmas() {
     const { data, error } = await supabase
@@ -62,16 +64,16 @@ export default function ReservaModal({
         sala,
       });
 
-    setSalvando(false);
-
     if (error) {
       console.log(error);
-      alert(error.message);
+      alert("Erro ao realizar reserva.");
+      setSalvando(false);
       return;
     }
 
     alert("Reserva realizada com sucesso!");
 
+    setSalvando(false);
     setSala("");
     fechar();
 
@@ -90,7 +92,6 @@ export default function ReservaModal({
         value={sala}
         onChange={(e) => setSala(e.target.value)}
       >
-
         <option value="">
           Selecione a turma
         </option>
@@ -103,7 +104,6 @@ export default function ReservaModal({
             {turma.nome}
           </option>
         ))}
-
       </select>
 
       <button
