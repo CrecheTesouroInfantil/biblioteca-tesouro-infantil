@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Livro } from "@/types/Livro";
+import { Livro } from "@/app/types/Livro";
 
 interface LivroProps {
   livro: Livro;
@@ -28,6 +28,7 @@ export default function LivroCard({
 
     if (error) {
       alert("Erro ao excluir.");
+      console.log(error);
       return;
     }
 
@@ -37,35 +38,35 @@ export default function LivroCard({
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
-      <Link href={`/livro/${livro.id}`}>
-
-        {livro.capa ? (
-          <Image
-            src={livro.capa}
-            alt={livro.nome}
-            width={400}
-            height={600}
-            className="w-full h-80 object-cover cursor-pointer"
-          />
-        ) : (
-          <div className="w-full h-80 bg-gray-200 flex items-center justify-center text-6xl cursor-pointer">
-            📚
-          </div>
-        )}
-
-      </Link>
+      {livro.capa ? (
+        <Image
+          src={livro.capa}
+          alt={livro.nome}
+          width={400}
+          height={600}
+          className="w-full h-80 object-cover"
+        />
+      ) : (
+        <div className="w-full h-80 bg-gray-200 flex items-center justify-center text-6xl">
+          📚
+        </div>
+      )}
 
       <div className="p-5">
 
-        <Link href={`/livro/${livro.id}`}>
-          <h2 className="text-xl font-bold text-blue-700 line-clamp-2 hover:underline cursor-pointer">
-            {livro.nome}
-          </h2>
-        </Link>
+        <h2 className="text-xl font-bold text-blue-700 line-clamp-2">
+          {livro.nome}
+        </h2>
 
         <p className="text-gray-500 mt-1">
           {livro.autor}
         </p>
+
+        {livro.codigo && (
+          <p className="text-sm font-bold text-gray-600 mt-2">
+            🆔 {livro.codigo}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2 mt-4">
 
@@ -81,10 +82,12 @@ export default function LivroCard({
 
         <div className="mt-4 text-sm text-gray-600">
 
-          <p>👶 {livro.faixa_etaria || "-"}</p>
+          <p>
+            👶 {livro.faixa_etaria || "-"}
+          </p>
 
           <p className="mt-1">
-            📦 {livro.quantidade} unidade(s)
+            📦 {livro.quantidade ?? 0} unidade(s)
           </p>
 
         </div>
@@ -93,9 +96,12 @@ export default function LivroCard({
 
           <button
             onClick={() => onEmprestar(livro.id)}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold"
+            disabled={(livro.quantidade ?? 0) <= 0}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl py-3 font-semibold"
           >
-            📤 Emprestar
+            {(livro.quantidade ?? 0) <= 0
+              ? "📕 Indisponível"
+              : "📤 Emprestar"}
           </button>
 
           <div className="grid grid-cols-2 gap-3">
