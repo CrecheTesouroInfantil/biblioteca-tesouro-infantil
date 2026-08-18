@@ -14,14 +14,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body>
+      <body className="overflow-x-hidden">
 
-        <div className="flex">
+        <div className="min-h-screen">
 
           <Sidebar />
 
-          <main className="flex-1 bg-blue-50 min-h-screen">
-            {children}
+          <main className="min-h-screen bg-blue-50 md:ml-72">
+            <div className="min-w-0">
+              {children}
+            </div>
           </main>
 
         </div>
