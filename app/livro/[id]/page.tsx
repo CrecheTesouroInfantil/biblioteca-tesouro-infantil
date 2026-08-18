@@ -24,7 +24,6 @@ export default function Livro() {
 
   const [livro, setLivro] = useState<any>(null);
   const [historico, setHistorico] = useState<Emprestimo[]>([]);
-  const [urlLivro, setUrlLivro] = useState("");
 
   const [abrirReserva, setAbrirReserva] = useState(false);
   const [abrirEmprestimo, setAbrirEmprestimo] = useState(false);
@@ -32,13 +31,7 @@ export default function Livro() {
   useEffect(() => {
     buscarLivro();
     buscarHistorico();
-
-    if (typeof window !== "undefined") {
-      setUrlLivro(
-        `${window.location.origin}/livro/${params.id}`
-      );
-    }
-  }, [params.id]);
+  }, []);
 
   async function buscarLivro() {
     const { data, error } = await supabase
@@ -70,10 +63,6 @@ export default function Livro() {
     setHistorico(data || []);
   }
 
-  function imprimirEtiqueta() {
-    window.print();
-  }
-
   if (!livro) {
     return (
       <main className="p-10 text-center">
@@ -84,40 +73,13 @@ export default function Livro() {
 
   const disponivel = (livro.quantidade ?? 0) > 0;
 
-  const codigoLivro =
-    livro.codigo ||
-    `LIV-${String(livro.id).padStart(6, "0")}`;
+  const enderecoLivro =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/livro/${livro.id}`
+      : `/livro/${livro.id}`;
 
   return (
     <>
-      <style jsx global>{`
-        @media print {
-          body {
-            background: white !important;
-          }
-
-          body * {
-            visibility: hidden;
-          }
-
-          .etiqueta-impressao,
-          .etiqueta-impressao * {
-            visibility: visible;
-          }
-
-          .etiqueta-impressao {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-
-          .nao-imprimir {
-            display: none !important;
-          }
-        }
-      `}</style>
-
       <ReservaModal
         aberto={abrirReserva}
         fechar={() => setAbrirReserva(false)}
@@ -134,13 +96,9 @@ export default function Livro() {
 
         <div className="max-w-7xl mx-auto">
 
-          {/* ETIQUETA DO LIVRO */}
-
-          <div className="etiqueta-impressao bg-white rounded-3xl shadow-xl p-6 md:p-10">
+          <div className="bg-white rounded-3xl shadow-xl p-5 md:p-10">
 
             <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
-
-              {/* CAPA */}
 
               <div>
 
@@ -150,56 +108,38 @@ export default function Livro() {
                     alt={livro.nome}
                     width={500}
                     height={700}
-                    className="rounded-2xl shadow-lg w-full max-h-[650px] object-contain"
+                    className="rounded-2xl shadow-lg w-full h-auto"
                   />
                 ) : (
-                  <div className="h-[500px] bg-gray-200 rounded-2xl flex items-center justify-center text-8xl">
+                  <div className="h-[400px] md:h-[600px] bg-gray-200 rounded-2xl flex items-center justify-center text-8xl">
                     📚
                   </div>
                 )}
 
               </div>
 
-              {/* INFORMAÇÕES */}
-
               <div>
 
-                <p className="text-blue-600 font-bold text-lg mb-2">
-                  📚 BIBLIOTECA TESOURO INFANTIL
-                </p>
-
-                <h1 className="text-4xl md:text-5xl font-bold text-blue-700">
+                <h1 className="text-3xl md:text-5xl font-bold text-blue-700">
                   {livro.nome}
                 </h1>
 
-                <div className="mt-5 bg-blue-50 rounded-2xl p-4">
-
-                  <p className="text-xl font-extrabold text-blue-700">
-                    🆔 {codigoLivro}
-                  </p>
-
-                </div>
-
-                <div className="space-y-3 mt-6 text-base md:text-lg">
+                <div className="space-y-3 mt-6 md:mt-8 text-base md:text-lg">
 
                   <p>
-                    <strong>👤 Autor:</strong>{" "}
-                    {livro.autor || "-"}
+                    <strong>👤 Autor:</strong> {livro.autor}
                   </p>
 
                   <p>
-                    <strong>🏷️ Categoria:</strong>{" "}
-                    {livro.categoria || "-"}
+                    <strong>🏷️ Categoria:</strong> {livro.categoria}
                   </p>
 
                   <p>
-                    <strong>👶 Faixa Etária:</strong>{" "}
-                    {livro.faixa_etaria || "-"}
+                    <strong>👶 Faixa Etária:</strong> {livro.faixa_etaria}
                   </p>
 
                   <p>
-                    <strong>📍 Local:</strong>{" "}
-                    {livro.local || "-"}
+                    <strong>📍 Local:</strong> {livro.local}
                   </p>
 
                   <p>
@@ -211,7 +151,7 @@ export default function Livro() {
                           : "text-red-600 font-bold"
                       }
                     >
-                      {livro.quantidade ?? 0}
+                      {livro.quantidade}
                     </span>
                   </p>
 
@@ -220,34 +160,15 @@ export default function Livro() {
                     {historico.length}
                   </p>
 
-                </div>
-
-                {/* QR CODE */}
-
-                <div className="mt-8 border-2 border-dashed border-blue-300 rounded-2xl p-5 flex flex-col items-center">
-
-                  <p className="font-bold text-blue-700 mb-4">
-                    📱 Escaneie para acessar este livro
-                  </p>
-
-                  {urlLivro && (
-                    <QRCodeSVG
-                      value={urlLivro}
-                      size={180}
-                      level="H"
-                      includeMargin
-                    />
+                  {!disponivel && (
+                    <div className="bg-red-100 border border-red-300 text-red-700 rounded-xl p-4 mt-4 font-bold">
+                      🚫 Este livro está indisponível para empréstimo.
+                    </div>
                   )}
 
-                  <p className="text-xs text-gray-500 mt-3 text-center break-all">
-                    {urlLivro}
-                  </p>
-
                 </div>
 
-                {/* BOTÕES */}
-
-                <div className="nao-imprimir grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 md:mt-10">
 
                   {disponivel ? (
                     <button
@@ -279,18 +200,11 @@ export default function Livro() {
                     ✏️ Editar
                   </Link>
 
-                  <button
-                    onClick={imprimirEtiqueta}
-                    className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold"
-                  >
-                    🖨️ Imprimir etiqueta
-                  </button>
-
                   <Link
                     href="/biblioteca"
-                    className="bg-gray-700 hover:bg-gray-800 text-white py-3 rounded-xl text-center font-bold sm:col-span-2"
+                    className="bg-gray-700 hover:bg-gray-800 text-white py-3 rounded-xl text-center font-bold"
                   >
-                    ← Voltar para biblioteca
+                    ← Voltar
                   </Link>
 
                 </div>
@@ -301,9 +215,44 @@ export default function Livro() {
 
           </div>
 
+          {/* QR CODE */}
+
+          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8">
+
+            <div className="flex flex-col items-center text-center">
+
+              <h2 className="text-2xl md:text-3xl font-bold text-blue-700 mb-2">
+                📱 QR Code do Livro
+              </h2>
+
+              <p className="text-gray-500 mb-6">
+                Aponte a câmera do celular para acessar este livro.
+              </p>
+
+              <div className="bg-white p-4 rounded-2xl shadow-lg border">
+                <QRCodeSVG
+                  value={enderecoLivro}
+                  size={220}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+
+              <p className="mt-5 text-lg font-bold text-gray-700">
+                {livro.nome}
+              </p>
+
+              <p className="text-sm text-gray-400 mt-1">
+                Código: LIV-{String(livro.id).padStart(6, "0")}
+              </p>
+
+            </div>
+
+          </div>
+
           {/* HISTÓRICO */}
 
-          <div className="nao-imprimir bg-white rounded-3xl shadow-xl mt-10 p-5 md:p-8">
+          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8">
 
             <h2 className="text-2xl md:text-3xl font-bold text-blue-700 mb-6">
               📜 Histórico de Empréstimos
@@ -316,7 +265,7 @@ export default function Livro() {
             ) : (
               <div className="overflow-x-auto">
 
-                <table className="w-full">
+                <table className="w-full min-w-[700px]">
 
                   <thead>
                     <tr className="border-b">

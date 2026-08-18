@@ -42,25 +42,37 @@ export default function LivroCard({
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
-      {livro.capa ? (
-        <Image
-          src={livro.capa}
-          alt={livro.nome}
-          width={400}
-          height={600}
-          className="w-full h-80 object-cover"
-        />
-      ) : (
-        <div className="w-full h-80 bg-gray-200 flex items-center justify-center text-6xl">
-          📚
-        </div>
-      )}
+      {/* CAPA CLICÁVEL */}
+      <Link
+        href={`/livro/${livro.id}`}
+        className="block"
+      >
+        {livro.capa ? (
+          <Image
+            src={livro.capa}
+            alt={livro.nome}
+            width={400}
+            height={600}
+            className="w-full h-80 object-cover cursor-pointer"
+          />
+        ) : (
+          <div className="w-full h-80 bg-gray-200 flex items-center justify-center text-6xl cursor-pointer">
+            📚
+          </div>
+        )}
+      </Link>
 
       <div className="p-5">
 
-        <h2 className="text-xl font-bold text-blue-700 line-clamp-2">
-          {livro.nome}
-        </h2>
+        {/* NOME CLICÁVEL */}
+        <Link
+          href={`/livro/${livro.id}`}
+          className="block"
+        >
+          <h2 className="text-xl font-bold text-blue-700 line-clamp-2 hover:text-blue-900 hover:underline cursor-pointer">
+            {livro.nome}
+          </h2>
+        </Link>
 
         <p className="text-gray-500 mt-1">
           {livro.autor}
