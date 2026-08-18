@@ -1,10 +1,19 @@
 export interface Livro {
   id: number;
+
+  codigo?: string;
+
   nome: string;
+
   autor: string;
-  categoria: string;
-  faixa_etaria: string;
-  quantidade: number;
-  local: string;
-  capa: string;
+
+  categoria: string | null;
+
+  faixa_etaria: string | null;
+
+  quantidade: number | null;
+
+  local: string | null;
+
+  capa: string | null;
 }
