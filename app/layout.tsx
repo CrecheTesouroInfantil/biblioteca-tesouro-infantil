@@ -15,19 +15,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="overflow-x-hidden">
+        <Sidebar />
 
-        <div className="min-h-screen">
-
-          <Sidebar />
-
-          <main className="min-h-screen bg-blue-50 md:ml-72">
-            <div className="min-w-0">
-              {children}
-            </div>
-          </main>
-
-        </div>
-
+        <main className="min-h-screen w-full min-w-0 bg-blue-50 md:ml-72 md:w-[calc(100%-18rem)]">
+          <div className="w-full min-w-0 max-w-full">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );

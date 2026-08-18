@@ -59,55 +59,56 @@ export default function Sidebar() {
     <>
       {/* Botão do menu no celular */}
       <button
+        type="button"
         onClick={() => setAberto(true)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-blue-700 text-white w-12 h-12 rounded-xl shadow-lg text-2xl"
+        className="md:hidden fixed top-4 left-4 z-[60] flex h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-2xl text-white shadow-lg"
         aria-label="Abrir menu"
       >
         ☰
       </button>
 
-      {/* Fundo escuro atrás do menu no celular */}
+      {/* Fundo escuro */}
       {aberto && (
         <button
+          type="button"
           onClick={fecharMenu}
-          className="md:hidden fixed inset-0 bg-black/40 z-40"
+          className="md:hidden fixed inset-0 z-40 bg-black/40"
           aria-label="Fechar menu"
         />
       )}
 
+      {/* Menu */}
       <aside
         className={`
-          fixed md:sticky
-          top-0 left-0
-          z-50
-          w-72
-          h-screen
+          fixed top-0 left-0 z-50
+          h-screen w-72
           bg-gradient-to-b from-blue-700 via-blue-800 to-blue-950
-          text-white
-          shadow-2xl
+          text-white shadow-2xl
           flex flex-col
-          transform transition-transform duration-300
+          transition-transform duration-300
           ${aberto ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
-        <div className="p-6 md:p-8 border-b border-blue-500">
+        {/* Cabeçalho */}
+        <div className="flex-shrink-0 border-b border-blue-500 p-6 md:p-8">
 
           <div className="flex items-start justify-between">
 
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold">
+              <h1 className="text-2xl font-extrabold md:text-3xl">
                 📚 Biblioteca
               </h1>
 
-              <p className="text-blue-200 mt-1 md:mt-2">
+              <p className="mt-1 text-blue-200 md:mt-2">
                 Tesouro Infantil
               </p>
             </div>
 
             <button
+              type="button"
               onClick={fecharMenu}
-              className="md:hidden text-white text-2xl"
+              className="md:hidden text-2xl text-white"
               aria-label="Fechar menu"
             >
               ✕
@@ -117,54 +118,59 @@ export default function Sidebar() {
 
         </div>
 
-        <nav className="flex-1 p-4 md:p-5 space-y-1 md:space-y-2 overflow-y-auto">
+        {/* Menus */}
+        <nav className="flex-1 overflow-y-auto p-4 md:p-5">
 
-          {menus.map((menu) => {
+          <div className="space-y-1 md:space-y-2">
 
-            const ativo =
-              menu.link === "/"
-                ? pathname === "/"
-                : pathname.startsWith(menu.link);
+            {menus.map((menu) => {
 
-            return (
-              <Link
-                key={menu.nome}
-                href={menu.link}
-                onClick={fecharMenu}
-                className={`
-                  flex items-center gap-4
-                  rounded-2xl
-                  px-4 md:px-5
-                  py-3 md:py-4
-                  transition-all duration-300
-                  ${
-                    ativo
-                      ? "bg-white text-blue-700 font-bold shadow-lg md:scale-[1.02]"
-                      : "text-blue-100 hover:bg-blue-600 hover:translate-x-1"
-                  }
-                `}
-              >
-                <span className="text-2xl">
-                  {menu.emoji}
-                </span>
+              const ativo =
+                menu.link === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(menu.link);
 
-                <span className="text-base md:text-lg">
-                  {menu.nome}
-                </span>
-              </Link>
-            );
+              return (
+                <Link
+                  key={menu.nome}
+                  href={menu.link}
+                  onClick={fecharMenu}
+                  className={`
+                    flex items-center gap-4
+                    rounded-2xl
+                    px-4 py-3 md:px-5 md:py-4
+                    transition-all duration-300
+                    ${
+                      ativo
+                        ? "bg-white text-blue-700 font-bold shadow-lg"
+                        : "text-blue-100 hover:bg-blue-600 hover:translate-x-1"
+                    }
+                  `}
+                >
+                  <span className="text-2xl">
+                    {menu.emoji}
+                  </span>
 
-          })}
+                  <span className="text-base md:text-lg">
+                    {menu.nome}
+                  </span>
+                </Link>
+              );
+
+            })}
+
+          </div>
 
         </nav>
 
-        <div className="border-t border-blue-600 p-5 md:p-6">
+        {/* Rodapé */}
+        <div className="flex-shrink-0 border-t border-blue-600 p-5 md:p-6">
 
-          <p className="text-blue-200 text-sm">
+          <p className="text-sm text-blue-200">
             Biblioteca Tesouro Infantil
           </p>
 
-          <p className="text-blue-400 text-xs mt-1">
+          <p className="mt-1 text-xs text-blue-400">
             Versão 3.0
           </p>
 

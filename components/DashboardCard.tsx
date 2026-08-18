@@ -1,6 +1,8 @@
+"use client";
+
 interface DashboardCardProps {
   titulo: string;
-  valor: number | string;
+  valor: number;
   emoji: string;
 }
 
@@ -10,19 +12,25 @@ export default function DashboardCard({
   emoji,
 }: DashboardCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
+    <div className="w-full min-w-0 bg-white rounded-3xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+      
+      <div className="flex items-center justify-between gap-4">
+        
+        <div className="min-w-0">
+          <p className="text-gray-500 text-sm md:text-base font-semibold truncate">
+            {titulo}
+          </p>
 
-      <div className="text-5xl mb-4">
-        {emoji}
+          <p className="text-3xl md:text-4xl font-extrabold text-blue-700 mt-2">
+            {valor}
+          </p>
+        </div>
+
+        <div className="flex-shrink-0 text-4xl md:text-5xl">
+          {emoji}
+        </div>
+
       </div>
-
-      <p className="text-gray-500">
-        {titulo}
-      </p>
-
-      <h2 className="text-4xl font-bold text-blue-700 mt-2">
-        {valor}
-      </h2>
 
     </div>
   );

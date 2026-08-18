@@ -27,7 +27,6 @@ export default function Dashboard({
   }, []);
 
   async function carregarDados() {
-    // Empréstimos ativos
     const { count: totalEmprestados } = await supabase
       .from("emprestimos")
       .select("*", { count: "exact", head: true })
@@ -35,7 +34,6 @@ export default function Dashboard({
 
     setEmprestados(totalEmprestados || 0);
 
-    // Reservas pendentes
     const { count: totalReservas } = await supabase
       .from("reservas")
       .select("*", { count: "exact", head: true })
@@ -43,14 +41,12 @@ export default function Dashboard({
 
     setReservas(totalReservas || 0);
 
-    // Turmas cadastradas
     const { count: totalTurmas } = await supabase
       .from("turmas")
       .select("*", { count: "exact", head: true });
 
     setTurmas(totalTurmas || 0);
 
-    // Empréstimos atrasados
     const hoje = new Date().toISOString().split("T")[0];
 
     const { data } = await supabase
@@ -62,135 +58,144 @@ export default function Dashboard({
     setAtrasados(data?.length || 0);
   }
 
-  const disponiveis = totalLivros - emprestados;
+  const disponiveis = Math.max(totalLivros - emprestados, 0);
 
   return (
-    <>
+    <div className="w-full max-w-full min-w-0 overflow-hidden">
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+      <div className="w-full min-w-0 px-1 md:px-2">
 
-        <DashboardCard
-          titulo="Livros"
-          valor={totalLivros}
-          emoji="📚"
-        />
+        {/* PRIMEIRA LINHA */}
+        <div className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 mb-6">
 
-        <DashboardCard
-          titulo="Disponíveis"
-          valor={disponiveis}
-          emoji="✅"
-        />
+          <DashboardCard
+            titulo="Livros"
+            valor={totalLivros}
+            emoji="📚"
+          />
 
-        <DashboardCard
-          titulo="Emprestados"
-          valor={emprestados}
-          emoji="📤"
-        />
+          <DashboardCard
+            titulo="Disponíveis"
+            valor={disponiveis}
+            emoji="✅"
+          />
 
-        <DashboardCard
-          titulo="Reservas"
-          valor={reservas}
-          emoji="📌"
-        />
+          <DashboardCard
+            titulo="Emprestados"
+            valor={emprestados}
+            emoji="📤"
+          />
 
-      </div>
+          <DashboardCard
+            titulo="Reservas"
+            valor={reservas}
+            emoji="📌"
+          />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+        </div>
 
-        <DashboardCard
-          titulo="Categorias"
-          valor={totalCategorias}
-          emoji="🏷️"
-        />
+        {/* SEGUNDA LINHA */}
+        <div className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 mb-8">
 
-        <DashboardCard
-          titulo="Caixas"
-          valor={totalCaixas}
-          emoji="📦"
-        />
+          <DashboardCard
+            titulo="Categorias"
+            valor={totalCategorias}
+            emoji="🏷️"
+          />
 
-        <DashboardCard
-          titulo="Capas"
-          valor={totalCapas}
-          emoji="🖼️"
-        />
+          <DashboardCard
+            titulo="Caixas"
+            valor={totalCaixas}
+            emoji="📦"
+          />
 
-        <DashboardCard
-          titulo="Turmas"
-          valor={turmas}
-          emoji="👶"
-        />
+          <DashboardCard
+            titulo="Capas"
+            valor={totalCapas}
+            emoji="🖼️"
+          />
 
-      </div>
+          <DashboardCard
+            titulo="Turmas"
+            valor={turmas}
+            emoji="👶"
+          />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        </div>
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
+        {/* INFORMAÇÕES */}
+        <div className="grid w-full min-w-0 grid-cols-1 xl:grid-cols-2 gap-5">
 
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">
-            📊 Situação da Biblioteca
-          </h2>
+          <div className="w-full min-w-0 bg-white rounded-3xl shadow-lg p-5 md:p-6">
 
-          <div className="space-y-3 text-lg">
+            <h2 className="text-xl md:text-2xl font-bold text-blue-700 mb-4">
+              📊 Situação da Biblioteca
+            </h2>
 
-            <p>
-              📚 Livros cadastrados:
-              <strong> {totalLivros}</strong>
-            </p>
+            <div className="space-y-3 text-base md:text-lg">
 
-            <p>
-              📤 Livros emprestados:
-              <strong> {emprestados}</strong>
-            </p>
+              <p>
+                📚 Livros cadastrados:
+                <strong> {totalLivros}</strong>
+              </p>
 
-            <p>
-              📌 Reservas pendentes:
-              <strong> {reservas}</strong>
-            </p>
+              <p>
+                📤 Livros emprestados:
+                <strong> {emprestados}</strong>
+              </p>
 
-            <p>
-              👶 Turmas cadastradas:
-              <strong> {turmas}</strong>
-            </p>
+              <p>
+                📌 Reservas pendentes:
+                <strong> {reservas}</strong>
+              </p>
 
-            <p className={atrasados > 0 ? "text-red-600 font-bold" : "text-green-600 font-bold"}>
+              <p>
+                👶 Turmas cadastradas:
+                <strong> {turmas}</strong>
+              </p>
 
-              ⏰ Empréstimos atrasados:
-              {" "}
-              {atrasados}
+              <p
+                className={
+                  atrasados > 0
+                    ? "text-red-600 font-bold"
+                    : "text-green-600 font-bold"
+                }
+              >
+                ⏰ Empréstimos atrasados: {atrasados}
+              </p>
 
-            </p>
+            </div>
+
+          </div>
+
+          <div className="w-full min-w-0 bg-white rounded-3xl shadow-lg p-5 md:p-6">
+
+            <h2 className="text-xl md:text-2xl font-bold text-blue-700 mb-4">
+              🚀 Próximos Recursos
+            </h2>
+
+            <div className="space-y-3 text-base md:text-lg">
+
+              <p>✅ QR Code dos livros</p>
+
+              <p>✅ Leitura pela câmera</p>
+
+              <p>✅ Histórico completo</p>
+
+              <p>✅ Relatórios em PDF</p>
+
+              <p>✅ Livros mais emprestados</p>
+
+              <p>✅ Estatísticas por turma</p>
+
+            </div>
 
           </div>
 
         </div>
 
-        <div className="bg-white rounded-3xl shadow-lg p-6">
-
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">
-            🚀 Próximos Recursos
-          </h2>
-
-          <div className="space-y-3">
-
-            <p>✅ QR Code dos livros</p>
-
-            <p>✅ Leitura pela câmera</p>
-
-            <p>✅ Histórico completo</p>
-
-            <p>✅ Relatórios em PDF</p>
-
-            <p>✅ Livros mais emprestados</p>
-
-            <p>✅ Estatísticas por turma</p>
-
-          </div>
-
-        </div>
-
       </div>
 
-    </>
+    </div>
   );
 }
