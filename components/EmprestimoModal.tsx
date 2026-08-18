@@ -37,18 +37,39 @@ export default function EmprestimoModal({
     }
 
     if (!sala) {
-      alert("Selecione uma sala.");
+      alert("Selecione uma turma.");
       return;
     }
 
     if (!dataPrevista) {
-      alert("Informe a data prevista para devolução.");
+      alert("Informe a data prevista de devolução.");
       return;
     }
 
     setSalvando(true);
 
     try {
+      // Busca o livro
+      const { data: livro, error: erroLivro } = await supabase
+        .from("livros")
+        .select("quantidade,nome")
+        .eq("id", livroId)
+        .single();
+
+      if (erroLivro) throw erroLivro;
+
+      const quantidadeAtual = livro.quantidade ?? 0;
+
+      // BLOQUEIA NOVO EMPRÉSTIMO
+      if (quantidadeAtual <= 0) {
+        alert(
+          `O livro "${livro.nome}" não possui exemplares disponíveis.\n\nRealize uma reserva em vez de um empréstimo.`
+        );
+        setSalvando(false);
+        return;
+      }
+
+      // Salva empréstimo
       const { error } = await supabase
         .from("emprestimos")
         .insert({
@@ -59,42 +80,17 @@ export default function EmprestimoModal({
           devolvido: false,
         });
 
-      if (error) {
-        console.error("ERRO AO SALVAR:", error);
+      if (error) throw error;
 
-        alert(
-          `Erro:\n\n${error.message}\n\nDetalhes:\n${error.details ?? "Nenhum"}`
-        );
-
-        return;
-      }
-
-      const { data: livro, error: erroLivro } = await supabase
-        .from("livros")
-        .select("quantidade")
-        .eq("id", livroId)
-        .single();
-
-      if (erroLivro) {
-        console.error(erroLivro);
-        alert(erroLivro.message);
-        return;
-      }
-
-      const quantidadeAtual = livro?.quantidade ?? 0;
-
+      // Atualiza quantidade
       const { error: erroAtualizar } = await supabase
         .from("livros")
         .update({
-          quantidade: Math.max(0, quantidadeAtual - 1),
+          quantidade: quantidadeAtual - 1,
         })
         .eq("id", livroId);
 
-      if (erroAtualizar) {
-        console.error(erroAtualizar);
-        alert(erroAtualizar.message);
-        return;
-      }
+      if (erroAtualizar) throw erroAtualizar;
 
       alert("Empréstimo realizado com sucesso!");
 
@@ -105,12 +101,17 @@ export default function EmprestimoModal({
       fechar();
 
       window.location.reload();
-    } catch (erro: any) {
-      console.error(erro);
-      alert(JSON.stringify(erro));
-    } finally {
-      setSalvando(false);
+
+    } catch (error: any) {
+      console.log(error);
+
+      alert(
+        error.message ??
+        "Erro ao realizar empréstimo."
+      );
     }
+
+    setSalvando(false);
   }
 
   return (
@@ -124,10 +125,15 @@ export default function EmprestimoModal({
         value={sala}
         onChange={(e) => setSala(e.target.value)}
       >
-        <option value="">Selecione a sala</option>
+        <option value="">
+          Selecione a turma
+        </option>
 
         {salas.map((item) => (
-          <option key={item} value={item}>
+          <option
+            key={item}
+            value={item}
+          >
             {item}
           </option>
         ))}
@@ -152,8 +158,11 @@ export default function EmprestimoModal({
         disabled={salvando}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-xl py-3 font-bold"
       >
-        {salvando ? "Salvando..." : "📤 Confirmar Empréstimo"}
+        {salvando
+          ? "Salvando..."
+          : "📤 Confirmar Empréstimo"}
       </button>
+
     </Modal>
   );
 }

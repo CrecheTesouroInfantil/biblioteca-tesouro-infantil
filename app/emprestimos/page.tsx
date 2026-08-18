@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import EmprestimosDashboard from "@/components/EmprestimosDashboard";
 
 interface Emprestimo {
   id: number;
@@ -15,42 +14,49 @@ interface Emprestimo {
   livros: {
     nome: string;
     capa: string;
-    quantidade: number;
   };
 }
 
 export default function Emprestimos() {
   const [emprestimos, setEmprestimos] = useState<Emprestimo[]>([]);
-  const [pesquisa, setPesquisa] = useState("");
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     buscarEmprestimos();
   }, []);
 
   async function buscarEmprestimos() {
+    setCarregando(true);
+
     const { data, error } = await supabase
       .from("emprestimos")
       .select(`
         *,
         livros (
           nome,
-          capa,
-          quantidade
+          capa
         )
       `)
       .order("data_emprestimo", { ascending: false });
 
     if (error) {
       console.log(error);
+      setCarregando(false);
       return;
     }
 
     setEmprestimos((data as Emprestimo[]) || []);
+    setCarregando(false);
   }
 
   async function devolverLivro(item: Emprestimo) {
-    if (!confirm(`Deseja devolver "${item.livros.nome}"?`)) return;
+    const confirmar = confirm(
+      `Deseja marcar "${item.livros?.nome}" como devolvido?`
+    );
 
+    if (!confirmar) return;
+
+    // Marca o empréstimo como devolvido
     const { error } = await supabase
       .from("emprestimos")
       .update({
@@ -60,38 +66,47 @@ export default function Emprestimos() {
       .eq("id", item.id);
 
     if (error) {
-      alert(error.message);
+      alert("Erro ao devolver livro.");
+      console.log(error);
       return;
     }
 
-    await supabase
+    // Atualiza estoque
+    const { data: livro, error: erroLivro } = await supabase
       .from("livros")
-      .update({
-        quantidade: (item.livros.quantidade ?? 0) + 1,
-      })
-      .eq("id", item.livro_id);
+      .select("quantidade")
+      .eq("id", item.livro_id)
+      .single();
+
+    if (!erroLivro && livro) {
+      await supabase
+        .from("livros")
+        .update({
+          quantidade: (livro.quantidade ?? 0) + 1,
+        })
+        .eq("id", item.livro_id);
+    }
+
+    // Procura reserva pendente
+    const { data: reserva } = await supabase
+      .from("reservas")
+      .select("*")
+      .eq("livro_id", item.livro_id)
+      .eq("atendida", false)
+      .order("data_reserva", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (reserva) {
+      alert(
+        `📌 Existe uma reserva aguardando este livro.\n\nTurma: ${reserva.sala}`
+      );
+    } else {
+      alert("Livro devolvido com sucesso!");
+    }
 
     buscarEmprestimos();
   }
-
-  const hoje = new Date();
-
-  const lista = emprestimos.filter((item) => {
-    const texto = pesquisa.toLowerCase();
-
-    return (
-      item.livros?.nome?.toLowerCase().includes(texto) ||
-      item.sala?.toLowerCase().includes(texto)
-    );
-  });
-
-  const emprestados = emprestimos.filter((e) => !e.devolvido).length;
-  const devolvidos = emprestimos.filter((e) => e.devolvido).length;
-
-  const atrasados = emprestimos.filter((e) => {
-    if (e.devolvido) return false;
-    return new Date(e.data_prevista) < hoje;
-  }).length;
 
   return (
     <main className="p-8">
@@ -100,102 +115,84 @@ export default function Emprestimos() {
         📤 Empréstimos
       </h1>
 
-      <EmprestimosDashboard
-        total={emprestimos.length}
-        emprestados={emprestados}
-        devolvidos={devolvidos}
-        atrasados={atrasados}
-      />
+      {carregando ? (
 
-      <input
-        type="text"
-        placeholder="🔎 Pesquisar por livro ou sala..."
-        value={pesquisa}
-        onChange={(e) => setPesquisa(e.target.value)}
-        className="w-full border rounded-2xl p-4 mb-8"
-      />
+        <div className="bg-white rounded-3xl shadow-lg p-10 text-center">
+          Carregando...
+        </div>
 
-      {lista.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-lg p-10 text-center text-gray-500">
+      ) : emprestimos.length === 0 ? (
+
+        <div className="bg-white rounded-3xl shadow-lg p-10 text-center text-gray-500">
           Nenhum empréstimo encontrado.
         </div>
+
       ) : (
-        <div className="space-y-5">
 
-          {lista.map((item) => {
+        <div className="space-y-6">
 
-            const atrasado =
-              !item.devolvido &&
-              new Date(item.data_prevista) < hoje;
+          {emprestimos.map((item) => (
 
-            return (
+            <div
+              key={item.id}
+              className="bg-white rounded-3xl shadow-lg p-6"
+            >
 
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl shadow-lg p-6 flex gap-6"
-              >
+              <h2 className="text-2xl font-bold text-blue-700">
+                📚 {item.livros?.nome}
+              </h2>
 
-                <img
-                  src={item.livros?.capa || "/sem-capa.png"}
-                  alt={item.livros?.nome}
-                  className="w-24 h-36 rounded-xl object-cover border"
-                />
+              <p className="mt-3">
+                <strong>Turma:</strong> {item.sala}
+              </p>
 
-                <div className="flex-1">
+              <p>
+                <strong>Empréstimo:</strong> {item.data_emprestimo}
+              </p>
 
-                  <h2 className="text-2xl font-bold text-blue-700">
-                    {item.livros.nome}
-                  </h2>
+              <p>
+                <strong>Previsão:</strong> {item.data_prevista}
+              </p>
 
-                  <p className="mt-2">
-                    🏫 <strong>{item.sala}</strong>
-                  </p>
+              <p>
+                <strong>Devolução:</strong> {item.data_devolucao || "-"}
+              </p>
 
-                  <p>
-                    📅 Empréstimo: {item.data_emprestimo}
-                  </p>
+              <p className="mt-3">
 
-                  <p>
-                    ⏰ Prevista: {item.data_prevista}
-                  </p>
+                {item.devolvido ? (
 
-                  <div className="mt-4">
+                  <span className="text-green-600 font-bold">
+                    ✅ Devolvido
+                  </span>
 
-                    {item.devolvido ? (
-                      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full font-semibold">
-                        ✅ Devolvido
-                      </span>
-                    ) : atrasado ? (
-                      <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full font-semibold">
-                        ⏰ Atrasado
-                      </span>
-                    ) : (
-                      <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
-                        📤 Emprestado
-                      </span>
-                    )}
+                ) : (
 
-                  </div>
+                  <span className="text-orange-600 font-bold">
+                    📤 Emprestado
+                  </span>
 
-                  {!item.devolvido && (
+                )}
 
-                    <button
-                      onClick={() => devolverLivro(item)}
-                      className="mt-5 bg-green-600 hover:bg-green-700 text-white rounded-xl px-6 py-3 font-semibold"
-                    >
-                      ✔ Devolver Livro
-                    </button>
+              </p>
 
-                  )}
+              {!item.devolvido && (
 
-                </div>
+                <button
+                  onClick={() => devolverLivro(item)}
+                  className="mt-6 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold"
+                >
+                  ✔ Marcar como devolvido
+                </button>
 
-              </div>
+              )}
 
-            );
-          })}
+            </div>
+
+          ))}
 
         </div>
+
       )}
 
     </main>

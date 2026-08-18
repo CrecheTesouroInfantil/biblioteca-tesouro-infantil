@@ -9,6 +9,8 @@ export default function EditarLivro() {
   const { id } = useParams();
   const router = useRouter();
 
+  const [codigo, setCodigo] = useState("");
+
   const [nome, setNome] = useState("");
   const [autor, setAutor] = useState("");
   const [categoria, setCategoria] = useState("");
@@ -33,6 +35,7 @@ export default function EditarLivro() {
       return;
     }
 
+    setCodigo(data.codigo || "");
     setNome(data.nome || "");
     setAutor(data.autor || "");
     setCategoria(data.categoria || "");
@@ -75,6 +78,7 @@ export default function EditarLivro() {
         </h1>
 
         <FormLivro
+          codigo={codigo}
           nome={nome}
           setNome={setNome}
           autor={autor}

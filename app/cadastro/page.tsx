@@ -17,23 +17,36 @@ export default function CadastroLivro() {
   const [capa, setCapa] = useState("");
 
   async function salvarLivro() {
-    const { error } = await supabase.from("livros").insert([
-      {
-        nome,
-        autor,
-        categoria,
-        faixa_etaria: faixaEtaria,
-        quantidade,
-        local,
-        capa,
-      },
-    ]);
+    const { data, error } = await supabase
+      .from("livros")
+      .insert([
+        {
+          nome,
+          autor,
+          categoria,
+          faixa_etaria: faixaEtaria,
+          quantidade,
+          local,
+          capa,
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
       alert("Erro ao salvar.");
       console.log(error);
       return;
     }
+
+    const codigo = `LIV-${String(data.id).padStart(6, "0")}`;
+
+    await supabase
+      .from("livros")
+      .update({
+        codigo,
+      })
+      .eq("id", data.id);
 
     router.push("/");
   }
@@ -48,6 +61,7 @@ export default function CadastroLivro() {
         </h1>
 
         <FormLivro
+          codigo=""
           nome={nome}
           setNome={setNome}
           autor={autor}
