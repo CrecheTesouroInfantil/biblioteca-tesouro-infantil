@@ -7,12 +7,14 @@ import { Livro } from "@/app/types/Livro";
 
 interface LivroProps {
   livro: Livro;
+  publico?: boolean;
   onEmprestar: (id: number) => void;
   onReservar: (id: number) => void;
 }
 
 export default function LivroCard({
   livro,
+  publico = false,
   onEmprestar,
   onReservar,
 }: LivroProps) {
@@ -42,7 +44,6 @@ export default function LivroCard({
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
 
-      {/* CAPA CLICÁVEL */}
       <Link
         href={`/livro/${livro.id}`}
         className="block"
@@ -64,7 +65,6 @@ export default function LivroCard({
 
       <div className="p-5">
 
-        {/* NOME CLICÁVEL */}
         <Link
           href={`/livro/${livro.id}`}
           className="block"
@@ -108,49 +108,92 @@ export default function LivroCard({
 
         </div>
 
-        <div className="grid grid-cols-1 gap-3 mt-6">
+        {/* ÁREA PÚBLICA */}
 
-          {disponivel ? (
-            <button
-              onClick={() => onEmprestar(livro.id)}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold"
-            >
-              📤 Emprestar
-            </button>
-          ) : (
-            <div className="bg-red-100 text-red-700 rounded-xl py-3 text-center font-bold">
-              📕 Livro indisponível
-            </div>
-          )}
+        {publico ? (
 
-          {!disponivel && (
-            <button
-              onClick={() => onReservar(livro.id)}
-              className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-3 font-bold"
-            >
-              📌 Reservar livro
-            </button>
-          )}
+          <div className="mt-6">
 
-          <div className="grid grid-cols-2 gap-3">
+            {disponivel ? (
 
-            <Link
-              href={`/editar/${livro.id}`}
-              className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-3 text-center font-semibold"
-            >
-              ✏️ Editar
-            </Link>
+              <div className="bg-green-100 text-green-700 rounded-xl py-3 text-center font-bold">
+                🟢 Livro disponível
+              </div>
 
-            <button
-              onClick={excluirLivro}
-              className="bg-red-500 hover:bg-red-600 text-white rounded-xl py-3 font-semibold"
-            >
-              🗑️ Excluir
-            </button>
+            ) : (
+
+              <div className="space-y-3">
+
+                <div className="bg-red-100 text-red-700 rounded-xl py-3 text-center font-bold">
+                  🔴 Livro emprestado
+                </div>
+
+                <button
+                  onClick={() => onReservar(livro.id)}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-3 font-bold"
+                >
+                  📌 Reservar livro
+                </button>
+
+              </div>
+
+            )}
 
           </div>
 
-        </div>
+        ) : (
+
+          /* ÁREA ADMINISTRATIVA */
+
+          <div className="grid grid-cols-1 gap-3 mt-6">
+
+            {disponivel ? (
+
+              <button
+                onClick={() => onEmprestar(livro.id)}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold"
+              >
+                📤 Emprestar
+              </button>
+
+            ) : (
+
+              <div className="bg-red-100 text-red-700 rounded-xl py-3 text-center font-bold">
+                📕 Livro indisponível
+              </div>
+
+            )}
+
+            {!disponivel && (
+              <button
+                onClick={() => onReservar(livro.id)}
+                className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl py-3 font-bold"
+              >
+                📌 Reservar livro
+              </button>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+
+              <Link
+                href={`/editar/${livro.id}`}
+                className="bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-3 text-center font-semibold"
+              >
+                ✏️ Editar
+              </Link>
+
+              <button
+                onClick={excluirLivro}
+                className="bg-red-500 hover:bg-red-600 text-white rounded-xl py-3 font-semibold"
+              >
+                🗑️ Excluir
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
 
       </div>
 

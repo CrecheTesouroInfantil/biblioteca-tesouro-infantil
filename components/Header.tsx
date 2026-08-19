@@ -3,11 +3,13 @@ import Link from "next/link";
 interface HeaderProps {
   pesquisa: string;
   setPesquisa: (valor: string) => void;
+  publico?: boolean;
 }
 
 export default function Header({
   pesquisa,
   setPesquisa,
+  publico = false,
 }: HeaderProps) {
   return (
     <div className="bg-white rounded-3xl shadow-lg p-5 md:p-6 mb-6">
@@ -21,17 +23,21 @@ export default function Header({
           </h1>
 
           <p className="text-gray-500 mt-1">
-            Consulte e gerencie o acervo da creche.
+            {publico
+              ? "Consulte nosso acervo e veja a disponibilidade dos livros."
+              : "Consulte e gerencie o acervo da creche."}
           </p>
 
         </div>
 
-        <Link
-          href="/cadastro"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center whitespace-nowrap"
-        >
-          ➕ Novo Livro
-        </Link>
+        {!publico && (
+          <Link
+            href="/cadastro"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center whitespace-nowrap"
+          >
+            ➕ Novo Livro
+          </Link>
+        )}
 
       </div>
 
@@ -45,10 +51,8 @@ export default function Header({
           type="text"
           placeholder="Pesquisar por nome, autor, categoria, caixa, faixa ou código..."
           value={pesquisa}
-          onChange={(e) =>
-            setPesquisa(e.target.value)
-          }
-          className="w-full border border-gray-300 rounded-xl pl-12 pr-4 py-3 text-base outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          onChange={(e) => setPesquisa(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl pl-12 pr-12 py-3 text-base outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
 
         {pesquisa && (

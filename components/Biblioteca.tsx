@@ -7,10 +7,12 @@ import ReservaModal from "./ReservaModal";
 
 interface BibliotecaProps {
   livros: any[];
+  publico?: boolean;
 }
 
 export default function Biblioteca({
   livros,
+  publico = false,
 }: BibliotecaProps) {
   const [modalEmprestimo, setModalEmprestimo] = useState(false);
   const [modalReserva, setModalReserva] = useState(false);
@@ -55,6 +57,7 @@ export default function Biblioteca({
           <LivroCard
             key={livro.id}
             livro={livro}
+            publico={publico}
             onEmprestar={abrirEmprestimo}
             onReservar={abrirReserva}
           />
@@ -62,11 +65,13 @@ export default function Biblioteca({
 
       </div>
 
-      <EmprestimoModal
-        aberto={modalEmprestimo}
-        fechar={fecharEmprestimo}
-        livroId={livroSelecionado}
-      />
+      {!publico && (
+        <EmprestimoModal
+          aberto={modalEmprestimo}
+          fechar={fecharEmprestimo}
+          livroId={livroSelecionado}
+        />
+      )}
 
       <ReservaModal
         aberto={modalReserva}
