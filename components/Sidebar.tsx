@@ -58,6 +58,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Botão do menu no celular */}
+
       <button
         type="button"
         onClick={() => setAberto(true)}
@@ -68,6 +69,7 @@ export default function Sidebar() {
       </button>
 
       {/* Fundo escuro */}
+
       {aberto && (
         <button
           type="button"
@@ -78,6 +80,7 @@ export default function Sidebar() {
       )}
 
       {/* Menu */}
+
       <aside
         className={`
           fixed top-0 left-0 z-50
@@ -90,19 +93,31 @@ export default function Sidebar() {
           md:translate-x-0
         `}
       >
+
         {/* Cabeçalho */}
-        <div className="flex-shrink-0 border-b border-blue-500 p-6 md:p-8">
 
-          <div className="flex items-start justify-between">
+        <div className="flex-shrink-0 border-b border-blue-500 p-5 md:p-6">
 
-            <div>
-              <h1 className="text-2xl font-extrabold md:text-3xl">
-                📚 Biblioteca
-              </h1>
+          <div className="flex items-center justify-between gap-3">
 
-              <p className="mt-1 text-blue-200 md:mt-2">
-                Tesouro Infantil
-              </p>
+            <div className="flex items-center gap-3 min-w-0">
+
+              <img
+                src="/logo-creche.png"
+                alt="Creche Tesouro Infantil"
+                className="w-16 h-16 object-contain shrink-0"
+              />
+
+              <div>
+                <h1 className="text-xl font-extrabold md:text-2xl">
+                  Biblioteca
+                </h1>
+
+                <p className="mt-1 text-blue-200 text-sm md:text-base">
+                  Tesouro Infantil
+                </p>
+              </div>
+
             </div>
 
             <button
@@ -119,6 +134,7 @@ export default function Sidebar() {
         </div>
 
         {/* Menus */}
+
         <nav className="flex-1 overflow-y-auto p-4 md:p-5">
 
           <div className="space-y-1 md:space-y-2">
@@ -147,6 +163,7 @@ export default function Sidebar() {
                     }
                   `}
                 >
+
                   <span className="text-2xl">
                     {menu.emoji}
                   </span>
@@ -154,6 +171,7 @@ export default function Sidebar() {
                   <span className="text-base md:text-lg">
                     {menu.nome}
                   </span>
+
                 </Link>
               );
 
@@ -164,6 +182,7 @@ export default function Sidebar() {
         </nav>
 
         {/* Rodapé */}
+
         <div className="flex-shrink-0 border-t border-blue-600 p-5 md:p-6">
 
           <p className="text-sm text-blue-200">

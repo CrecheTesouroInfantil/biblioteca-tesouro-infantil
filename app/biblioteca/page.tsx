@@ -185,6 +185,14 @@ export default function BibliotecaPage() {
                 }}
               >
 
+                {/* LOGO DA CRECHE */}
+
+                <img
+                  src="/logo-creche.png"
+                  alt="Creche Tesouro Infantil"
+                  className="w-14 h-14 object-contain mb-1"
+                />
+
                 <div className="text-blue-700 font-extrabold text-[11px] leading-tight">
                   📚 BIBLIOTECA
                 </div>
@@ -206,7 +214,7 @@ export default function BibliotecaPage() {
                 <div className="bg-white p-1 mt-1">
                   <QRCodeSVG
                     value={enderecoLivro}
-                    size={105}
+                    size={100}
                     level="H"
                     includeMargin={true}
                   />
