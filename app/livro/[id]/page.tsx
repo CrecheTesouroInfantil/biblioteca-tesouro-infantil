@@ -76,6 +76,10 @@ export default function Livro() {
   const enderecoLivro =
     `https://biblioteca-tesouro-infantil-es3o-lyart.vercel.app/livro/${livro.id}`;
 
+  function imprimirEtiqueta() {
+    window.print();
+  }
+
   return (
     <>
       <ReservaModal
@@ -94,7 +98,9 @@ export default function Livro() {
 
         <div className="max-w-7xl mx-auto">
 
-          <div className="bg-white rounded-3xl shadow-xl p-5 md:p-10">
+          {/* FICHA DO LIVRO */}
+
+          <div className="bg-white rounded-3xl shadow-xl p-5 md:p-10 print:hidden">
 
             <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
 
@@ -198,6 +204,13 @@ export default function Livro() {
                     ✏️ Editar
                   </Link>
 
+                  <button
+                    onClick={imprimirEtiqueta}
+                    className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl text-center font-bold"
+                  >
+                    🖨️ Imprimir etiqueta
+                  </button>
+
                   <Link
                     href="/biblioteca"
                     className="bg-gray-700 hover:bg-gray-800 text-white py-3 rounded-xl text-center font-bold"
@@ -213,9 +226,9 @@ export default function Livro() {
 
           </div>
 
-          {/* QR CODE */}
+          {/* QR CODE NORMAL */}
 
-          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8">
+          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8 print:hidden">
 
             <div className="flex flex-col items-center text-center">
 
@@ -250,9 +263,61 @@ export default function Livro() {
 
           </div>
 
+          {/* ETIQUETA PARA IMPRESSÃO */}
+
+          <div className="hidden print:flex print:items-center print:justify-center">
+
+            <div
+              className="border-4 border-blue-700 rounded-2xl bg-white flex flex-col items-center justify-center text-center"
+              style={{
+                width: "8cm",
+                height: "10cm",
+                padding: "0.5cm",
+              }}
+            >
+
+              <div className="text-blue-700 font-extrabold text-lg">
+                📚 BIBLIOTECA
+              </div>
+
+              <div className="text-blue-700 font-extrabold text-lg">
+                TESOURO INFANTIL
+              </div>
+
+              <div className="w-full border-t-2 border-blue-700 my-3" />
+
+              <div className="font-bold text-xl text-gray-800 leading-tight">
+                {livro.nome}
+              </div>
+
+              <div className="text-sm text-gray-600 mt-2">
+                {livro.autor}
+              </div>
+
+              <div className="bg-white p-2 mt-3">
+                <QRCodeSVG
+                  value={enderecoLivro}
+                  size={150}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+
+              <div className="font-bold text-gray-700 text-sm mt-2">
+                LIV-{String(livro.id).padStart(6, "0")}
+              </div>
+
+              <div className="text-xs text-gray-500 mt-1">
+                Aponte a câmera para consultar este livro
+              </div>
+
+            </div>
+
+          </div>
+
           {/* HISTÓRICO */}
 
-          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8">
+          <div className="bg-white rounded-3xl shadow-xl mt-8 md:mt-10 p-6 md:p-8 print:hidden">
 
             <h2 className="text-2xl md:text-3xl font-bold text-blue-700 mb-6">
               📜 Histórico de Empréstimos
