@@ -46,14 +46,42 @@ export default function BibliotecaPage() {
     setLivros(data || []);
   }
 
+  const textoPesquisa = pesquisa
+    .toLowerCase()
+    .trim();
+
   const livrosFiltrados = livros.filter((livro) => {
-    const texto = pesquisa.toLowerCase();
+    if (!textoPesquisa) {
+      return true;
+    }
 
     return (
-      livro.nome?.toLowerCase().includes(texto) ||
-      livro.autor?.toLowerCase().includes(texto) ||
-      livro.categoria?.toLowerCase().includes(texto) ||
-      livro.local?.toLowerCase().includes(texto)
+      livro.nome
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      livro.autor
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      livro.categoria
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      livro.local
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      livro.faixa_etaria
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      livro.codigo
+        ?.toLowerCase()
+        .includes(textoPesquisa) ||
+
+      String(livro.id)
+        .includes(textoPesquisa)
     );
   });
 
@@ -71,6 +99,7 @@ export default function BibliotecaPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
           <div>
+
             <h1 className="text-3xl font-extrabold text-blue-700">
               📚 Biblioteca
             </h1>
@@ -78,6 +107,7 @@ export default function BibliotecaPage() {
             <p className="text-gray-500 mt-1">
               {livros.length} livro(s) cadastrado(s)
             </p>
+
           </div>
 
           <button
@@ -93,6 +123,41 @@ export default function BibliotecaPage() {
           pesquisa={pesquisa}
           setPesquisa={setPesquisa}
         />
+
+        {/* CONTADOR DA PESQUISA */}
+
+        <div className="mb-5">
+
+          {textoPesquisa ? (
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-blue-700 font-semibold">
+
+              🔎 Encontrados{" "}
+              <strong>
+                {livrosFiltrados.length}
+              </strong>{" "}
+              livro(s) para:
+
+              <span className="font-bold">
+                {" "}
+                "{pesquisa}"
+              </span>
+
+            </div>
+
+          ) : (
+
+            <div className="text-gray-500 text-sm">
+              📚 Exibindo todos os{" "}
+              <strong>
+                {livros.length}
+              </strong>{" "}
+              livro(s) cadastrados.
+            </div>
+
+          )}
+
+        </div>
 
         <Biblioteca
           livros={livrosFiltrados}
