@@ -22,43 +22,101 @@ export default function Dashboard({
   const [turmas, setTurmas] = useState(0);
   const [atrasados, setAtrasados] = useState(0);
 
+  const [totalExemplares, setTotalExemplares] = useState(0);
+  const [exemplaresDisponiveis, setExemplaresDisponiveis] =
+    useState(0);
+
   useEffect(() => {
     carregarDados();
   }, []);
 
   async function carregarDados() {
+    /*
+     * Busca todos os livros para calcular
+     * o estoque real de exemplares.
+     */
+    const { data: livros, error: erroLivros } = await supabase
+      .from("livros")
+      .select("quantidade");
+
+    if (!erroLivros && livros) {
+      const total = livros.reduce(
+        (soma, livro) => soma + (livro.quantidade ?? 0),
+        0
+      );
+
+      setTotalExemplares(total);
+    }
+
+    /*
+     * Empréstimos ativos
+     */
     const { count: totalEmprestados } = await supabase
       .from("emprestimos")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
       .eq("devolvido", false);
 
     setEmprestados(totalEmprestados || 0);
 
+    /*
+     * Reservas pendentes
+     */
     const { count: totalReservas } = await supabase
       .from("reservas")
-      .select("*", { count: "exact", head: true })
+      .select("*", {
+        count: "exact",
+        head: true,
+      })
       .eq("atendida", false);
 
     setReservas(totalReservas || 0);
 
+    /*
+     * Turmas cadastradas
+     */
     const { count: totalTurmas } = await supabase
       .from("turmas")
-      .select("*", { count: "exact", head: true });
+      .select("*", {
+        count: "exact",
+        head: true,
+      });
 
     setTurmas(totalTurmas || 0);
 
-    const hoje = new Date().toISOString().split("T")[0];
+    /*
+     * Empréstimos atrasados
+     */
+    const hoje = new Date()
+      .toISOString()
+      .split("T")[0];
 
-    const { data } = await supabase
+    const { data: emprestimosAtrasados } = await supabase
       .from("emprestimos")
       .select("id")
       .eq("devolvido", false)
       .lt("data_prevista", hoje);
 
-    setAtrasados(data?.length || 0);
+    setAtrasados(
+      emprestimosAtrasados?.length || 0
+    );
   }
 
-  const disponiveis = Math.max(totalLivros - emprestados, 0);
+  /*
+   * O estoque disponível é calculado a partir
+   * do total real de exemplares menos os
+   * empréstimos ativos.
+   */
+  useEffect(() => {
+    const disponiveis = Math.max(
+      totalExemplares - emprestados,
+      0
+    );
+
+    setExemplaresDisponiveis(disponiveis);
+  }, [totalExemplares, emprestados]);
 
   return (
     <div className="w-full max-w-full min-w-0 overflow-hidden">
@@ -66,6 +124,7 @@ export default function Dashboard({
       <div className="w-full min-w-0 px-1 md:px-2">
 
         {/* PRIMEIRA LINHA */}
+
         <div className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 mb-6">
 
           <DashboardCard
@@ -75,8 +134,14 @@ export default function Dashboard({
           />
 
           <DashboardCard
+            titulo="Exemplares"
+            valor={totalExemplares}
+            emoji="📦"
+          />
+
+          <DashboardCard
             titulo="Disponíveis"
-            valor={disponiveis}
+            valor={exemplaresDisponiveis}
             emoji="✅"
           />
 
@@ -86,27 +151,22 @@ export default function Dashboard({
             emoji="📤"
           />
 
+        </div>
+
+        {/* SEGUNDA LINHA */}
+
+        <div className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 mb-8">
+
           <DashboardCard
             titulo="Reservas"
             valor={reservas}
             emoji="📌"
           />
 
-        </div>
-
-        {/* SEGUNDA LINHA */}
-        <div className="grid w-full min-w-0 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 mb-8">
-
           <DashboardCard
             titulo="Categorias"
             valor={totalCategorias}
             emoji="🏷️"
-          />
-
-          <DashboardCard
-            titulo="Caixas"
-            valor={totalCaixas}
-            emoji="📦"
           />
 
           <DashboardCard
@@ -124,6 +184,7 @@ export default function Dashboard({
         </div>
 
         {/* INFORMAÇÕES */}
+
         <div className="grid w-full min-w-0 grid-cols-1 xl:grid-cols-2 gap-5">
 
           <div className="w-full min-w-0 bg-white rounded-3xl shadow-lg p-5 md:p-6">
@@ -137,6 +198,16 @@ export default function Dashboard({
               <p>
                 📚 Livros cadastrados:
                 <strong> {totalLivros}</strong>
+              </p>
+
+              <p>
+                📦 Total de exemplares:
+                <strong> {totalExemplares}</strong>
+              </p>
+
+              <p>
+                ✅ Exemplares disponíveis:
+                <strong> {exemplaresDisponiveis}</strong>
               </p>
 
               <p>
@@ -161,7 +232,8 @@ export default function Dashboard({
                     : "text-green-600 font-bold"
                 }
               >
-                ⏰ Empréstimos atrasados: {atrasados}
+                ⏰ Empréstimos atrasados:{" "}
+                {atrasados}
               </p>
 
             </div>
@@ -171,7 +243,7 @@ export default function Dashboard({
           <div className="w-full min-w-0 bg-white rounded-3xl shadow-lg p-5 md:p-6">
 
             <h2 className="text-xl md:text-2xl font-bold text-blue-700 mb-4">
-              🚀 Próximos Recursos
+              🚀 Recursos disponíveis
             </h2>
 
             <div className="space-y-3 text-base md:text-lg">
@@ -182,11 +254,11 @@ export default function Dashboard({
 
               <p>✅ Histórico completo</p>
 
-              <p>✅ Relatórios em PDF</p>
+              <p>✅ Empréstimos e devoluções</p>
 
-              <p>✅ Livros mais emprestados</p>
+              <p>✅ Reservas integradas</p>
 
-              <p>✅ Estatísticas por turma</p>
+              <p>✅ Impressão de etiquetas</p>
 
             </div>
 
