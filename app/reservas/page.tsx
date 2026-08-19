@@ -44,7 +44,9 @@ export default function ReservasPage() {
           capa
         )
       `)
-      .order("data_reserva", { ascending: false });
+      .order("data_reserva", {
+        ascending: false,
+      });
 
     if (error) {
       console.log(error);
@@ -57,7 +59,9 @@ export default function ReservasPage() {
   }
 
   function abrirAtendimento(reserva: Reserva) {
-    const hoje = new Date().toISOString().split("T")[0];
+    const hoje = new Date()
+      .toISOString()
+      .split("T")[0];
 
     setReservaSelecionada(reserva);
     setDataPrevista(hoje);
@@ -74,86 +78,138 @@ export default function ReservasPage() {
     if (!reservaSelecionada) return;
 
     if (!dataPrevista) {
-      alert("Informe a data prevista de devolução.");
+      alert(
+        "Informe a data prevista de devolução."
+      );
+      return;
+    }
+
+    const hoje = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    if (dataPrevista < hoje) {
+      alert(
+        "A data prevista de devolução não pode ser anterior à data de hoje."
+      );
       return;
     }
 
     setSalvando(true);
 
+    let emprestimoCriado = false;
+    let estoqueAtual = 0;
+
     try {
       /*
-       * 1. Busca o estoque atual do livro
+       * 1. Busca o estoque atual
        */
-      const { data: livro, error: erroLivro } = await supabase
-        .from("livros")
-        .select("quantidade,nome")
-        .eq("id", reservaSelecionada.livro_id)
-        .single();
+
+      const { data: livro, error: erroLivro } =
+        await supabase
+          .from("livros")
+          .select("quantidade,nome")
+          .eq(
+            "id",
+            reservaSelecionada.livro_id
+          )
+          .single();
 
       if (erroLivro) {
         throw erroLivro;
       }
 
-      const quantidadeAtual = livro?.quantidade ?? 0;
+      estoqueAtual = livro?.quantidade ?? 0;
 
       /*
-       * 2. Confirma que existe exemplar disponível
+       * 2. Verifica disponibilidade
        */
-      if (quantidadeAtual <= 0) {
+
+      if (estoqueAtual <= 0) {
         alert(
-          `O livro "${livro?.nome}" está sem exemplares disponíveis no momento.`
+          `O livro "${livro?.nome}" está sem exemplares disponíveis no momento.\n\nA reserva continuará pendente.`
         );
 
-        setSalvando(false);
         return;
       }
 
       /*
-       * 3. Cria o empréstimo
+       * 3. Baixa o estoque com proteção
        */
-      const hoje = new Date().toISOString().split("T")[0];
 
-      const { error: erroEmprestimo } = await supabase
-        .from("emprestimos")
-        .insert({
-          livro_id: reservaSelecionada.livro_id,
-          sala: reservaSelecionada.sala,
-          data_emprestimo: hoje,
-          data_prevista: dataPrevista,
-          devolvido: false,
-        });
-
-      if (erroEmprestimo) {
-        throw erroEmprestimo;
-      }
-
-      /*
-       * 4. Diminui o estoque
-       */
-      const { error: erroEstoque } = await supabase
-        .from("livros")
-        .update({
-          quantidade: quantidadeAtual - 1,
-        })
-        .eq("id", reservaSelecionada.livro_id);
+      const { data: estoqueAtualizado, error: erroEstoque } =
+        await supabase
+          .from("livros")
+          .update({
+            quantidade: estoqueAtual - 1,
+          })
+          .eq(
+            "id",
+            reservaSelecionada.livro_id
+          )
+          .eq("quantidade", estoqueAtual)
+          .select("id");
 
       if (erroEstoque) {
         throw erroEstoque;
       }
 
+      if (
+        !estoqueAtualizado ||
+        estoqueAtualizado.length === 0
+      ) {
+        throw new Error(
+          "O estoque foi alterado por outra operação. Atualize a página e tente novamente."
+        );
+      }
+
+      /*
+       * 4. Cria o empréstimo
+       */
+
+      const { data: novoEmprestimo, error: erroEmprestimo } =
+        await supabase
+          .from("emprestimos")
+          .insert({
+            livro_id:
+              reservaSelecionada.livro_id,
+            sala: reservaSelecionada.sala,
+            data_emprestimo: hoje,
+            data_prevista: dataPrevista,
+            devolvido: false,
+          })
+          .select("id")
+          .single();
+
+      if (erroEmprestimo) {
+        throw erroEmprestimo;
+      }
+
+      emprestimoCriado = true;
+
       /*
        * 5. Marca a reserva como atendida
        */
-      const { error: erroReserva } = await supabase
-        .from("reservas")
-        .update({
-          atendida: true,
-        })
-        .eq("id", reservaSelecionada.id);
+
+      const { error: erroReserva } =
+        await supabase
+          .from("reservas")
+          .update({
+            atendida: true,
+          })
+          .eq(
+            "id",
+            reservaSelecionada.id
+          )
+          .eq("atendida", false);
 
       if (erroReserva) {
         throw erroReserva;
       }
+
+      /*
+       * 6. Sucesso
+       */
 
       alert(
         `📚 Empréstimo realizado com sucesso!\n\n` +
@@ -163,15 +219,57 @@ export default function ReservasPage() {
       );
 
       fecharAtendimento();
-      buscarReservas();
+      await buscarReservas();
 
     } catch (error: any) {
       console.log(error);
 
+      /*
+       * Tenta desfazer o empréstimo
+       * caso alguma etapa posterior tenha falhado.
+       */
+
+      if (emprestimoCriado) {
+        await supabase
+          .from("emprestimos")
+          .delete()
+          .eq(
+            "livro_id",
+            reservaSelecionada.livro_id
+          )
+          .eq("sala", reservaSelecionada.sala)
+          .eq(
+            "data_emprestimo",
+            hoje
+          )
+          .eq("data_prevista", dataPrevista)
+          .eq("devolvido", false)
+          .limit(1);
+      }
+
+      /*
+       * Devolve o exemplar ao estoque.
+       */
+
+      if (estoqueAtual > 0) {
+        await supabase
+          .from("livros")
+          .update({
+            quantidade: estoqueAtual,
+          })
+          .eq(
+            "id",
+            reservaSelecionada.livro_id
+          );
+      }
+
       alert(
         error?.message ||
-        "Erro ao atender a reserva."
+        "Erro ao atender a reserva. A reserva continuará pendente."
       );
+
+      await buscarReservas();
+
     } finally {
       setSalvando(false);
     }
@@ -195,7 +293,7 @@ export default function ReservasPage() {
       return;
     }
 
-    buscarReservas();
+    await buscarReservas();
   }
 
   const total = reservas.length;
@@ -208,18 +306,18 @@ export default function ReservasPage() {
     (reserva) => reserva.atendida
   ).length;
 
-  const reservasFiltradas = reservas.filter((reserva) => {
+  const reservasFiltradas =
+    reservas.filter((reserva) => {
+      if (filtro === "pendentes") {
+        return !reserva.atendida;
+      }
 
-    if (filtro === "pendentes") {
-      return !reserva.atendida;
-    }
+      if (filtro === "atendidas") {
+        return reserva.atendida;
+      }
 
-    if (filtro === "atendidas") {
-      return reserva.atendida;
-    }
-
-    return true;
-  });
+      return true;
+    });
 
   return (
     <main className="min-h-screen bg-blue-50 p-4 md:p-8">
@@ -252,7 +350,6 @@ export default function ReservasPage() {
                 : ""
             }`}
           >
-
             <p className="text-gray-500 text-sm">
               Total
             </p>
@@ -264,7 +361,6 @@ export default function ReservasPage() {
             <p className="text-sm mt-1">
               📌 reservas
             </p>
-
           </button>
 
           <button
@@ -275,7 +371,6 @@ export default function ReservasPage() {
                 : ""
             }`}
           >
-
             <p className="text-gray-500 text-sm">
               Pendentes
             </p>
@@ -287,7 +382,6 @@ export default function ReservasPage() {
             <p className="text-sm mt-1">
               ⏳ aguardando atendimento
             </p>
-
           </button>
 
           <button
@@ -298,7 +392,6 @@ export default function ReservasPage() {
                 : ""
             }`}
           >
-
             <p className="text-gray-500 text-sm">
               Atendidas
             </p>
@@ -310,7 +403,6 @@ export default function ReservasPage() {
             <p className="text-sm mt-1">
               ✅ finalizadas
             </p>
-
           </button>
 
         </div>
@@ -438,8 +530,11 @@ export default function ReservasPage() {
                   {!reserva.atendida && (
 
                     <button
-                      onClick={() => abrirAtendimento(reserva)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold"
+                      onClick={() =>
+                        abrirAtendimento(reserva)
+                      }
+                      disabled={salvando}
+                      className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl font-bold"
                     >
                       ✅ Atender reserva
                     </button>
@@ -447,8 +542,11 @@ export default function ReservasPage() {
                   )}
 
                   <button
-                    onClick={() => excluirReserva(reserva.id)}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold"
+                    onClick={() =>
+                      excluirReserva(reserva.id)
+                    }
+                    disabled={salvando}
+                    className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-xl font-bold"
                   >
                     🗑️ Excluir
                   </button>
@@ -499,10 +597,14 @@ export default function ReservasPage() {
 
               <input
                 type="date"
+                min={new Date()
+                  .toISOString()
+                  .split("T")[0]}
                 value={dataPrevista}
                 onChange={(e) =>
                   setDataPrevista(e.target.value)
                 }
+                disabled={salvando}
                 className="w-full border rounded-xl p-3"
               />
 
@@ -513,7 +615,7 @@ export default function ReservasPage() {
               <button
                 onClick={fecharAtendimento}
                 disabled={salvando}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl py-3 font-bold"
+                className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-300 text-gray-700 rounded-xl py-3 font-bold"
               >
                 Cancelar
               </button>
@@ -524,7 +626,7 @@ export default function ReservasPage() {
                 className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-xl py-3 font-bold"
               >
                 {salvando
-                  ? "Salvando..."
+                  ? "💾 Salvando..."
                   : "📤 Confirmar empréstimo"}
               </button>
 
