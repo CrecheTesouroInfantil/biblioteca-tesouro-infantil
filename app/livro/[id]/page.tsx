@@ -74,9 +74,7 @@ export default function Livro() {
   const disponivel = (livro.quantidade ?? 0) > 0;
 
   const enderecoLivro =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/livro/${livro.id}`
-      : `/livro/${livro.id}`;
+    `https://biblioteca-tesouro-infantil-es3o-lyart.vercel.app/livro/${livro.id}`;
 
   return (
     <>
@@ -230,12 +228,14 @@ export default function Livro() {
               </p>
 
               <div className="bg-white p-4 rounded-2xl shadow-lg border">
+
                 <QRCodeSVG
                   value={enderecoLivro}
                   size={220}
                   level="H"
                   includeMargin={true}
                 />
+
               </div>
 
               <p className="mt-5 text-lg font-bold text-gray-700">
@@ -268,13 +268,31 @@ export default function Livro() {
                 <table className="w-full min-w-[700px]">
 
                   <thead>
+
                     <tr className="border-b">
-                      <th className="text-left py-3">Turma</th>
-                      <th className="text-left">Empréstimo</th>
-                      <th className="text-left">Prevista</th>
-                      <th className="text-left">Devolução</th>
-                      <th className="text-left">Status</th>
+
+                      <th className="text-left py-3">
+                        Turma
+                      </th>
+
+                      <th className="text-left">
+                        Empréstimo
+                      </th>
+
+                      <th className="text-left">
+                        Prevista
+                      </th>
+
+                      <th className="text-left">
+                        Devolução
+                      </th>
+
+                      <th className="text-left">
+                        Status
+                      </th>
+
                     </tr>
+
                   </thead>
 
                   <tbody>
