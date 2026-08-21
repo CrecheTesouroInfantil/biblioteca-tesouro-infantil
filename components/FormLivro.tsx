@@ -44,6 +44,7 @@ const faixas = [
   "Maternal I",
   "Maternal II",
   "Pré-escola",
+  "Todas",
 ];
 
 const locais = [

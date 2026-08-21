@@ -11,42 +11,42 @@ export default function Sidebar() {
   const menus = [
     {
       nome: "Dashboard",
-      emoji: "🏠",
+      icone: "⌂",
       link: "/",
     },
     {
       nome: "Biblioteca",
-      emoji: "📚",
+      icone: "▤",
       link: "/biblioteca",
     },
     {
       nome: "Turmas",
-      emoji: "👶",
+      icone: "●",
       link: "/turmas",
     },
     {
       nome: "Novo Livro",
-      emoji: "➕",
+      icone: "+",
       link: "/cadastro",
     },
     {
       nome: "Empréstimos",
-      emoji: "📤",
+      icone: "↗",
       link: "/emprestimos",
     },
     {
       nome: "Reservas",
-      emoji: "📌",
+      icone: "⚑",
       link: "/reservas",
     },
     {
       nome: "Relatórios",
-      emoji: "📊",
+      icone: "▥",
       link: "/relatorios",
     },
     {
       nome: "Configurações",
-      emoji: "⚙️",
+      icone: "⚙",
       link: "/configuracoes",
     },
   ];
@@ -57,87 +57,141 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Botão do menu no celular */}
+      {/* BOTÃO MOBILE */}
 
       <button
         type="button"
         onClick={() => setAberto(true)}
-        className="md:hidden fixed top-4 left-4 z-[60] flex h-12 w-12 items-center justify-center rounded-xl bg-blue-700 text-2xl text-white shadow-lg"
+        className="
+          md:hidden
+          fixed top-4 left-4 z-[70]
+          w-12 h-12
+          rounded-2xl
+          bg-blue-700
+          text-white
+          flex items-center justify-center
+          shadow-xl
+          border border-white/20
+          text-xl
+        "
         aria-label="Abrir menu"
       >
         ☰
       </button>
 
-      {/* Fundo escuro */}
+      {/* FUNDO MOBILE */}
 
       {aberto && (
         <button
           type="button"
           onClick={fecharMenu}
-          className="md:hidden fixed inset-0 z-40 bg-black/40"
+          className="
+            md:hidden
+            fixed inset-0 z-[60]
+            bg-slate-950/50
+            backdrop-blur-sm
+          "
           aria-label="Fechar menu"
         />
       )}
 
-      {/* Menu */}
+      {/* SIDEBAR */}
 
       <aside
         className={`
-          fixed top-0 left-0 z-50
-          h-screen w-72
-          bg-gradient-to-b from-blue-700 via-blue-800 to-blue-950
-          text-white shadow-2xl
+          fixed top-0 left-0 z-[65]
+          h-screen w-[280px]
+          bg-gradient-to-b from-[#1744c7] via-[#123ba8] to-[#102e82]
+          text-white
+          shadow-[12px_0_40px_rgba(15,45,120,0.18)]
           flex flex-col
-          transition-transform duration-300
+          transition-transform duration-300 ease-out
           ${aberto ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0
         `}
       >
 
-        {/* Cabeçalho */}
+        {/* CABEÇALHO */}
 
-        <div className="flex-shrink-0 border-b border-blue-500 p-5 md:p-6">
+        <div className="px-5 pt-6 pb-5">
 
-          <div className="flex items-center justify-between gap-3">
+          <div
+            className="
+              bg-white/10
+              border border-white/10
+              rounded-3xl
+              p-4
+              backdrop-blur-sm
+            "
+          >
 
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center gap-3">
 
-              <img
-                src="/logo-creche.png"
-                alt="Creche Tesouro Infantil"
-                className="w-16 h-16 object-contain shrink-0"
-              />
+              <div
+                className="
+                  w-14 h-14
+                  rounded-2xl
+                  bg-white
+                  flex items-center justify-center
+                  shadow-lg
+                  shrink-0
+                "
+              >
+                <img
+                  src="/logo-creche.png"
+                  alt="Creche Tesouro Infantil"
+                  className="w-11 h-11 object-contain"
+                />
+              </div>
 
-              <div>
-                <h1 className="text-xl font-extrabold md:text-2xl">
+              <div className="min-w-0">
+
+                <p className="text-[10px] uppercase tracking-[0.18em] text-blue-200 font-bold">
+                  Sistema
+                </p>
+
+                <h1 className="text-lg font-extrabold leading-tight">
                   Biblioteca
                 </h1>
 
-                <p className="mt-1 text-blue-200 text-sm md:text-base">
+                <p className="text-xs text-blue-100 mt-0.5">
                   Tesouro Infantil
                 </p>
+
               </div>
 
-            </div>
+              <button
+                type="button"
+                onClick={fecharMenu}
+                className="
+                  md:hidden
+                  ml-auto
+                  w-8 h-8
+                  rounded-xl
+                  bg-white/10
+                  text-white
+                  flex items-center justify-center
+                "
+                aria-label="Fechar menu"
+              >
+                ✕
+              </button>
 
-            <button
-              type="button"
-              onClick={fecharMenu}
-              className="md:hidden text-2xl text-white"
-              aria-label="Fechar menu"
-            >
-              ✕
-            </button>
+            </div>
 
           </div>
 
         </div>
 
-        {/* Menus */}
+        {/* MENU */}
 
-        <nav className="flex-1 overflow-y-auto p-4 md:p-5">
+        <nav className="flex-1 overflow-y-auto px-4 pb-5">
 
-          <div className="space-y-1 md:space-y-2">
+          <p className="px-3 mb-3 text-[10px] uppercase tracking-[0.18em] font-bold text-blue-200">
+            Menu principal
+          </p>
+
+          <div className="space-y-1.5">
 
             {menus.map((menu) => {
 
@@ -152,25 +206,55 @@ export default function Sidebar() {
                   href={menu.link}
                   onClick={fecharMenu}
                   className={`
-                    flex items-center gap-4
+                    group
+                    flex items-center gap-3
                     rounded-2xl
-                    px-4 py-3 md:px-5 md:py-4
-                    transition-all duration-300
+                    px-3 py-3
+                    transition-all duration-200
                     ${
                       ativo
-                        ? "bg-white text-blue-700 font-bold shadow-lg"
-                        : "text-blue-100 hover:bg-blue-600 hover:translate-x-1"
+                        ? "bg-white text-blue-700 shadow-lg"
+                        : "text-blue-100 hover:bg-white/10 hover:text-white"
                     }
                   `}
                 >
 
-                  <span className="text-2xl">
-                    {menu.emoji}
+                  <span
+                    className={`
+                      w-10 h-10
+                      rounded-xl
+                      flex items-center justify-center
+                      text-lg font-bold
+                      shrink-0
+                      transition
+                      ${
+                        ativo
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-white/10 text-white group-hover:bg-white/15"
+                      }
+                    `}
+                  >
+                    {menu.icone}
                   </span>
 
-                  <span className="text-base md:text-lg">
+                  <span
+                    className={`
+                      text-sm
+                      ${
+                        ativo
+                          ? "font-extrabold"
+                          : "font-semibold"
+                      }
+                    `}
+                  >
                     {menu.nome}
                   </span>
+
+                  {ativo && (
+                    <span className="ml-auto text-blue-600 text-sm">
+                      ●
+                    </span>
+                  )}
 
                 </Link>
               );
@@ -181,17 +265,52 @@ export default function Sidebar() {
 
         </nav>
 
-        {/* Rodapé */}
+        {/* RODAPÉ */}
 
-        <div className="flex-shrink-0 border-t border-blue-600 p-5 md:p-6">
+        <div className="px-4 pb-5">
 
-          <p className="text-sm text-blue-200">
-            Biblioteca Tesouro Infantil
-          </p>
+          <div
+            className="
+              rounded-2xl
+              bg-white/10
+              border border-white/10
+              px-4 py-4
+            "
+          >
 
-          <p className="mt-1 text-xs text-blue-400">
-            Versão 3.0
-          </p>
+            <div className="flex items-center gap-3">
+
+              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                📚
+              </div>
+
+              <div className="min-w-0">
+
+                <p className="text-xs font-bold text-white">
+                  Tesouro Infantil
+                </p>
+
+                <p className="text-[10px] text-blue-200 mt-0.5">
+                  Biblioteca escolar
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+
+              <span className="text-[10px] text-blue-200">
+                Sistema
+              </span>
+
+              <span className="text-[10px] font-bold text-blue-100">
+                v3.0
+              </span>
+
+            </div>
+
+          </div>
 
         </div>
 
