@@ -220,11 +220,8 @@ export default function RelatoriosPage() {
   if (carregando) {
     return (
       <main className="min-h-screen bg-[#eef5ff] p-4 md:p-8">
-
         <div className="max-w-7xl mx-auto">
-
           <div className="bg-white rounded-[2rem] shadow-lg p-12 text-center">
-
             <div className="text-5xl mb-4">
               📊
             </div>
@@ -232,11 +229,8 @@ export default function RelatoriosPage() {
             <p className="text-gray-500 font-semibold">
               Carregando relatórios...
             </p>
-
           </div>
-
         </div>
-
       </main>
     );
   }
@@ -246,28 +240,11 @@ export default function RelatoriosPage() {
 
       <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* CABEÇALHO */}
+        <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#1748d1] via-[#2457dc] to-[#12358f] text-white shadow-xl">
 
-        <section
-          className="
-            relative
-            overflow-hidden
-            rounded-[2rem]
-            bg-gradient-to-br
-            from-[#1748d1]
-            via-[#2457dc]
-            to-[#12358f]
-            text-white
-            shadow-xl
-            print:bg-white
-            print:text-black
-            print:shadow-none
-          "
-        >
+          <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/10" />
 
-          <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/10 print:hidden" />
-
-          <div className="absolute -left-20 -bottom-32 w-64 h-64 rounded-full bg-white/5 print:hidden" />
+          <div className="absolute -left-20 -bottom-32 w-64 h-64 rounded-full bg-white/5" />
 
           <div className="relative p-6 md:p-8">
 
@@ -278,17 +255,14 @@ export default function RelatoriosPage() {
                 <div className="flex items-center gap-3 mb-4">
 
                   <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-
                     <img
                       src="/logo-creche.png"
                       alt="Creche Tesouro Infantil"
                       className="w-9 h-9 object-contain"
                     />
-
                   </div>
 
                   <div>
-
                     <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-blue-100">
                       Gestão da biblioteca
                     </p>
@@ -296,7 +270,6 @@ export default function RelatoriosPage() {
                     <p className="font-bold">
                       Tesouro Infantil
                     </p>
-
                   </div>
 
                 </div>
@@ -315,18 +288,7 @@ export default function RelatoriosPage() {
               <button
                 type="button"
                 onClick={imprimir}
-                className="
-                  print:hidden
-                  bg-white
-                  text-blue-700
-                  hover:bg-blue-50
-                  px-6
-                  py-3
-                  rounded-xl
-                  font-extrabold
-                  shadow-lg
-                  transition
-                "
+                className="bg-white text-blue-700 hover:bg-blue-50 px-6 py-3 rounded-xl font-extrabold shadow-lg transition"
               >
                 🖨️ Imprimir relatório
               </button>
@@ -337,12 +299,9 @@ export default function RelatoriosPage() {
 
         </section>
 
-        {/* RESUMO PRINCIPAL */}
-
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <div className="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center text-xl">
               📚
             </div>
@@ -354,11 +313,9 @@ export default function RelatoriosPage() {
             <p className="text-3xl font-extrabold text-blue-700 mt-1">
               {livros.length}
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <div className="w-11 h-11 rounded-2xl bg-indigo-50 flex items-center justify-center text-xl">
               📦
             </div>
@@ -370,11 +327,9 @@ export default function RelatoriosPage() {
             <p className="text-3xl font-extrabold text-indigo-600 mt-1">
               {totalExemplares}
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <div className="w-11 h-11 rounded-2xl bg-green-50 flex items-center justify-center text-xl">
               ✅
             </div>
@@ -386,11 +341,9 @@ export default function RelatoriosPage() {
             <p className="text-3xl font-extrabold text-green-600 mt-1">
               {disponiveis}
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <div className="w-11 h-11 rounded-2xl bg-red-50 flex items-center justify-center text-xl">
               ⏰
             </div>
@@ -402,17 +355,13 @@ export default function RelatoriosPage() {
             <p className="text-3xl font-extrabold text-red-600 mt-1">
               {atrasados.length}
             </p>
-
           </div>
 
         </section>
 
-        {/* SEGUNDO RESUMO */}
-
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <p className="text-gray-500 text-sm">
               Total de empréstimos
             </p>
@@ -424,11 +373,9 @@ export default function RelatoriosPage() {
             <p className="text-xs text-gray-400 mt-1">
               movimentações registradas
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <p className="text-gray-500 text-sm">
               Em circulação
             </p>
@@ -440,11 +387,9 @@ export default function RelatoriosPage() {
             <p className="text-xs text-gray-400 mt-1">
               empréstimos ativos
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <p className="text-gray-500 text-sm">
               Devolvidos
             </p>
@@ -456,11 +401,9 @@ export default function RelatoriosPage() {
             <p className="text-xs text-gray-400 mt-1">
               empréstimos finalizados
             </p>
-
           </div>
 
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-
             <p className="text-gray-500 text-sm">
               Reservas pendentes
             </p>
@@ -472,12 +415,9 @@ export default function RelatoriosPage() {
             <p className="text-xs text-gray-400 mt-1">
               aguardando atendimento
             </p>
-
           </div>
 
         </section>
-
-        {/* RANKING + TURMAS */}
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
@@ -486,7 +426,6 @@ export default function RelatoriosPage() {
             <div className="flex items-center justify-between mb-6">
 
               <div>
-
                 <h2 className="text-xl md:text-2xl font-extrabold text-gray-800">
                   📚 Livros mais emprestados
                 </h2>
@@ -494,7 +433,6 @@ export default function RelatoriosPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Ranking dos livros com maior circulação.
                 </p>
-
               </div>
 
               <span className="hidden sm:flex w-11 h-11 rounded-2xl bg-blue-50 items-center justify-center text-xl">
@@ -519,14 +457,12 @@ export default function RelatoriosPage() {
                     const percentual =
                       Math.max(
                         (livro.quantidade /
-                          livrosMaisEmprestados[0]
-                            .quantidade) *
+                          livrosMaisEmprestados[0].quantidade) *
                           100,
                         8
                       );
 
                     return (
-
                       <div
                         key={livro.nome}
                         className="bg-gray-50 rounded-2xl p-4"
@@ -535,20 +471,11 @@ export default function RelatoriosPage() {
                         <div className="flex items-center gap-3">
 
                           <div
-                            className={`
-                              w-9 h-9
-                              rounded-xl
-                              flex
-                              items-center
-                              justify-center
-                              font-extrabold
-                              shrink-0
-                              ${
-                                index === 0
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-blue-100 text-blue-700"
-                              }
-                            `}
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center font-extrabold shrink-0 ${
+                              index === 0
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}
                           >
                             {index + 1}
                           </div>
@@ -583,7 +510,6 @@ export default function RelatoriosPage() {
                         </div>
 
                       </div>
-
                     );
                   }
                 )}
@@ -599,7 +525,6 @@ export default function RelatoriosPage() {
             <div className="flex items-center justify-between mb-6">
 
               <div>
-
                 <h2 className="text-xl md:text-2xl font-extrabold text-gray-800">
                   👶 Empréstimos por turma
                 </h2>
@@ -607,7 +532,6 @@ export default function RelatoriosPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Turmas que mais utilizam o acervo.
                 </p>
-
               </div>
 
               <span className="hidden sm:flex w-11 h-11 rounded-2xl bg-blue-50 items-center justify-center text-xl">
@@ -638,7 +562,6 @@ export default function RelatoriosPage() {
                       );
 
                     return (
-
                       <div key={item.sala}>
 
                         <div className="flex items-center justify-between mb-2">
@@ -656,7 +579,7 @@ export default function RelatoriosPage() {
                         <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
 
                           <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-blue-700 rounded-full"
+                            className="h-full bg-blue-600 rounded-full"
                             style={{
                               width: `${percentual}%`,
                             }}
@@ -665,7 +588,6 @@ export default function RelatoriosPage() {
                         </div>
 
                       </div>
-
                     );
                   }
                 )}
@@ -678,8 +600,6 @@ export default function RelatoriosPage() {
 
         </div>
 
-        {/* ATRASADOS + RESERVAS */}
-
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
           <section className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6">
@@ -687,7 +607,6 @@ export default function RelatoriosPage() {
             <div className="flex items-center justify-between mb-6">
 
               <div>
-
                 <h2 className="text-xl md:text-2xl font-extrabold text-red-600">
                   ⏰ Empréstimos atrasados
                 </h2>
@@ -695,7 +614,6 @@ export default function RelatoriosPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Livros que já passaram da data prevista.
                 </p>
-
               </div>
 
               <span className="w-11 h-11 rounded-2xl bg-red-50 flex items-center justify-center text-xl">
@@ -721,31 +639,17 @@ export default function RelatoriosPage() {
                     className="bg-red-50 border border-red-100 rounded-2xl p-4"
                   >
 
-                    <div className="flex items-start gap-3">
+                    <p className="font-extrabold text-red-700">
+                      📚 {item.livros?.nome || "Livro"}
+                    </p>
 
-                      <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-                        📚
-                      </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      👶 {item.sala}
+                    </p>
 
-                      <div className="min-w-0">
-
-                        <p className="font-extrabold text-red-700">
-                          {item.livros?.nome ||
-                            "Livro"}
-                        </p>
-
-                        <p className="text-sm text-gray-600 mt-1">
-                          👶 {item.sala}
-                        </p>
-
-                        <p className="text-sm text-red-600 font-semibold mt-1">
-                          📅 Devolução prevista:{" "}
-                          {item.data_prevista}
-                        </p>
-
-                      </div>
-
-                    </div>
+                    <p className="text-sm text-red-600 font-semibold mt-1">
+                      📅 Devolução prevista: {item.data_prevista}
+                    </p>
 
                   </div>
 
@@ -762,7 +666,6 @@ export default function RelatoriosPage() {
             <div className="flex items-center justify-between mb-6">
 
               <div>
-
                 <h2 className="text-xl md:text-2xl font-extrabold text-purple-600">
                   📌 Reservas pendentes
                 </h2>
@@ -770,7 +673,6 @@ export default function RelatoriosPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Solicitações que aguardam atendimento.
                 </p>
-
               </div>
 
               <span className="w-11 h-11 rounded-2xl bg-purple-50 flex items-center justify-center text-xl">
@@ -796,31 +698,17 @@ export default function RelatoriosPage() {
                     className="bg-purple-50 border border-purple-100 rounded-2xl p-4"
                   >
 
-                    <div className="flex items-start gap-3">
+                    <p className="font-extrabold text-purple-700">
+                      📚 {item.livros?.nome || "Livro"}
+                    </p>
 
-                      <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
-                        📚
-                      </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      👶 {item.sala}
+                    </p>
 
-                      <div className="min-w-0">
-
-                        <p className="font-extrabold text-purple-700">
-                          {item.livros?.nome ||
-                            "Livro"}
-                        </p>
-
-                        <p className="text-sm text-gray-600 mt-1">
-                          👶 {item.sala}
-                        </p>
-
-                        <p className="text-sm text-purple-600 font-semibold mt-1">
-                          📅 Reserva:{" "}
-                          {item.data_reserva}
-                        </p>
-
-                      </div>
-
-                    </div>
+                    <p className="text-sm text-purple-600 font-semibold mt-1">
+                      📅 Reserva: {item.data_reserva}
+                    </p>
 
                   </div>
 
@@ -834,11 +722,9 @@ export default function RelatoriosPage() {
 
         </div>
 
-        {/* RESERVAS ATENDIDAS */}
-
         <section className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6">
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
             <div>
 
@@ -855,7 +741,6 @@ export default function RelatoriosPage() {
             <div className="flex gap-3">
 
               <div className="bg-purple-50 rounded-2xl px-5 py-3">
-
                 <p className="text-xs text-purple-500 font-bold">
                   Pendentes
                 </p>
@@ -863,11 +748,9 @@ export default function RelatoriosPage() {
                 <p className="text-2xl font-extrabold text-purple-700">
                   {reservasPendentes.length}
                 </p>
-
               </div>
 
               <div className="bg-emerald-50 rounded-2xl px-5 py-3">
-
                 <p className="text-xs text-emerald-500 font-bold">
                   Atendidas
                 </p>
@@ -875,7 +758,6 @@ export default function RelatoriosPage() {
                 <p className="text-2xl font-extrabold text-emerald-700">
                   {reservasAtendidas.length}
                 </p>
-
               </div>
 
             </div>
@@ -885,29 +767,6 @@ export default function RelatoriosPage() {
         </section>
 
       </div>
-
-      {/* ESTILO DE IMPRESSÃO */}
-
-      <style jsx global>{`
-        @media print {
-          body {
-            background: white !important;
-          }
-
-          main {
-            background: white !important;
-            padding: 0 !important;
-          }
-
-          section {
-            break-inside: avoid;
-          }
-
-          button {
-            display: none !important;
-          }
-        }
-      `}</style>
 
     </main>
   );
