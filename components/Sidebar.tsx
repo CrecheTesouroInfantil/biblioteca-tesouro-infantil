@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
   const [aberto, setAberto] = useState(false);
+  const [saindo, setSaindo] = useState(false);
 
   const menus = [
     {
@@ -53,6 +57,26 @@ export default function Sidebar() {
 
   function fecharMenu() {
     setAberto(false);
+  }
+
+  async function sair() {
+    if (saindo) return;
+
+    setSaindo(true);
+
+    const { error } =
+      await supabaseBrowser.auth.signOut();
+
+    if (error) {
+      console.log(error);
+      setSaindo(false);
+      return;
+    }
+
+    fecharMenu();
+
+    router.replace("/login");
+    router.refresh();
   }
 
   return (
@@ -298,15 +322,48 @@ export default function Sidebar() {
 
             </div>
 
-            <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+            <div className="mt-3 pt-3 border-t border-white/10">
 
-              <span className="text-[10px] text-blue-200">
-                Sistema
-              </span>
+              <button
+                type="button"
+                onClick={sair}
+                disabled={saindo}
+                className="
+                  w-full
+                  flex items-center justify-center gap-2
+                  rounded-xl
+                  bg-white/10
+                  hover:bg-red-500/90
+                  disabled:opacity-60
+                  px-3 py-2.5
+                  text-xs
+                  font-bold
+                  text-white
+                  transition
+                "
+              >
+                <span>
+                  {saindo ? "..." : "↪"}
+                </span>
 
-              <span className="text-[10px] font-bold text-blue-100">
-                v3.0
-              </span>
+                <span>
+                  {saindo
+                    ? "Saindo..."
+                    : "Sair da conta"}
+                </span>
+              </button>
+
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+
+                <span className="text-[10px] text-blue-200">
+                  Sistema
+                </span>
+
+                <span className="text-[10px] font-bold text-blue-100">
+                  v3.0
+                </span>
+
+              </div>
 
             </div>
 
