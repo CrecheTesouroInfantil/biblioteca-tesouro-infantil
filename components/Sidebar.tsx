@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -11,6 +12,7 @@ export default function Sidebar() {
 
   const [aberto, setAberto] = useState(false);
   const [saindo, setSaindo] = useState(false);
+  const [usuario, setUsuario] = useState<User | null>(null);
 
   const menus = [
     {
@@ -55,6 +57,37 @@ export default function Sidebar() {
     },
   ];
 
+  useEffect(() => {
+    let ativo = true;
+
+    async function carregarUsuario() {
+      const {
+        data: { user },
+      } = await supabaseBrowser.auth.getUser();
+
+      if (ativo) {
+        setUsuario(user);
+      }
+    }
+
+    carregarUsuario();
+
+    const {
+      data: { subscription },
+    } = supabaseBrowser.auth.onAuthStateChange(
+      (_event, session) => {
+        if (ativo) {
+          setUsuario(session?.user ?? null);
+        }
+      }
+    );
+
+    return () => {
+      ativo = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
   function fecharMenu() {
     setAberto(false);
   }
@@ -73,11 +106,15 @@ export default function Sidebar() {
       return;
     }
 
+    setUsuario(null);
     fecharMenu();
 
     router.replace("/login");
     router.refresh();
   }
+
+  const emailUsuario =
+    usuario?.email || "Usuário administrativo";
 
   return (
     <>
@@ -200,6 +237,56 @@ export default function Sidebar() {
               >
                 ✕
               </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* USUÁRIO LOGADO */}
+
+        <div className="px-4 pb-4">
+
+          <div
+            className="
+              rounded-2xl
+              bg-white/10
+              border border-white/10
+              px-4 py-3
+            "
+          >
+
+            <div className="flex items-center gap-3">
+
+              <div
+                className="
+                  w-10 h-10
+                  rounded-xl
+                  bg-white
+                  text-blue-700
+                  flex items-center justify-center
+                  font-extrabold
+                  shrink-0
+                "
+              >
+                👤
+              </div>
+
+              <div className="min-w-0">
+
+                <p className="text-[10px] uppercase tracking-[0.14em] text-blue-200 font-bold">
+                  Usuário conectado
+                </p>
+
+                <p
+                  className="text-xs text-white font-semibold truncate mt-0.5"
+                  title={emailUsuario}
+                >
+                  {emailUsuario}
+                </p>
+
+              </div>
 
             </div>
 

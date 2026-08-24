@@ -9,13 +9,20 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
   const [carregando, setCarregando] = useState(false);
+  const [enviandoRecuperacao, setEnviandoRecuperacao] =
+    useState(false);
+
   const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState("");
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
 
     setErro("");
+    setSucesso("");
     setCarregando(true);
 
     const { error } =
@@ -34,12 +41,53 @@ export default function LoginPage() {
     router.refresh();
   }
 
+  async function recuperarSenha() {
+    setErro("");
+    setSucesso("");
+
+    if (!email.trim()) {
+      setErro(
+        "Digite seu e-mail antes de solicitar a recuperação da senha."
+      );
+      return;
+    }
+
+    setEnviandoRecuperacao(true);
+
+    const { error } =
+      await supabaseBrowser.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: `${window.location.origin}/redefinir-senha`,
+        }
+      );
+
+    if (error) {
+      console.log(error);
+
+      setErro(
+        "Não foi possível enviar o e-mail de recuperação."
+      );
+
+      setEnviandoRecuperacao(false);
+      return;
+    }
+
+    setSucesso(
+      "Enviamos um link de recuperação para seu e-mail. Verifique sua caixa de entrada."
+    );
+
+    setEnviandoRecuperacao(false);
+  }
+
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
 
       <div className="w-full max-w-md">
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
+
+          {/* CABEÇALHO */}
 
           <div className="flex flex-col items-center text-center mb-8">
 
@@ -59,10 +107,14 @@ export default function LoginPage() {
 
           </div>
 
+          {/* FORMULÁRIO */}
+
           <form
             onSubmit={entrar}
             className="space-y-5"
           >
+
+            {/* E-MAIL */}
 
             <div>
 
@@ -73,13 +125,27 @@ export default function LoginPage() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
                 placeholder="Digite seu e-mail"
                 required
-                className="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500"
+                autoComplete="email"
+                className="
+                  w-full
+                  border border-gray-300
+                  rounded-xl
+                  p-4
+                  outline-none
+                  focus:ring-2
+                  focus:ring-blue-500
+                  focus:border-blue-500
+                "
               />
 
             </div>
+
+            {/* SENHA */}
 
             <div>
 
@@ -87,16 +153,89 @@ export default function LoginPage() {
                 Senha
               </label>
 
-              <input
-                type="password"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                placeholder="Digite sua senha"
-                required
-                className="w-full border border-gray-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <div className="relative">
+
+                <input
+                  type={
+                    mostrarSenha
+                      ? "text"
+                      : "password"
+                  }
+                  value={senha}
+                  onChange={(e) =>
+                    setSenha(e.target.value)
+                  }
+                  placeholder="Digite sua senha"
+                  required
+                  autoComplete="current-password"
+                  className="
+                    w-full
+                    border border-gray-300
+                    rounded-xl
+                    p-4
+                    pr-14
+                    outline-none
+                    focus:ring-2
+                    focus:ring-blue-500
+                    focus:border-blue-500
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMostrarSenha(!mostrarSenha)
+                  }
+                  className="
+                    absolute
+                    right-3
+                    top-1/2
+                    -translate-y-1/2
+                    w-10
+                    h-10
+                    rounded-xl
+                    text-gray-500
+                    hover:bg-gray-100
+                    transition
+                  "
+                  aria-label={
+                    mostrarSenha
+                      ? "Ocultar senha"
+                      : "Mostrar senha"
+                  }
+                >
+                  {mostrarSenha ? "🙈" : "👁️"}
+                </button>
+
+              </div>
 
             </div>
+
+            {/* RECUPERAR SENHA */}
+
+            <div className="flex justify-end">
+
+              <button
+                type="button"
+                onClick={recuperarSenha}
+                disabled={enviandoRecuperacao}
+                className="
+                  text-sm
+                  font-bold
+                  text-blue-600
+                  hover:text-blue-800
+                  disabled:text-gray-400
+                  hover:underline
+                "
+              >
+                {enviandoRecuperacao
+                  ? "Enviando..."
+                  : "Esqueci minha senha"}
+              </button>
+
+            </div>
+
+            {/* ERRO */}
 
             {erro && (
 
@@ -106,10 +245,33 @@ export default function LoginPage() {
 
             )}
 
+            {/* SUCESSO */}
+
+            {sucesso && (
+
+              <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm font-semibold">
+                ✅ {sucesso}
+              </div>
+
+            )}
+
+            {/* ENTRAR */}
+
             <button
               type="submit"
               disabled={carregando}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-xl py-4 font-bold text-lg transition"
+              className="
+                w-full
+                bg-blue-600
+                hover:bg-blue-700
+                disabled:bg-gray-400
+                text-white
+                rounded-xl
+                py-4
+                font-bold
+                text-lg
+                transition
+              "
             >
               {carregando
                 ? "Entrando..."
