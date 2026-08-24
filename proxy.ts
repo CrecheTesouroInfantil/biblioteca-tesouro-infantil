@@ -24,13 +24,15 @@ export async function proxy(request: NextRequest) {
             request,
           });
 
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(
-              name,
-              value,
-              options
-            );
-          });
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              response.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
         },
       },
     }
@@ -44,13 +46,21 @@ export async function proxy(request: NextRequest) {
 
   const areaAdministrativa =
     caminho === "/admin" ||
-    caminho.startsWith("/cadastro") ||
-    caminho.startsWith("/editar") ||
-    caminho.startsWith("/emprestimos") ||
-    caminho.startsWith("/reservas") ||
-    caminho.startsWith("/relatorios") ||
-    caminho.startsWith("/turmas") ||
-    caminho.startsWith("/configuracoes");
+    caminho.startsWith("/admin/") ||
+    caminho === "/cadastro" ||
+    caminho.startsWith("/cadastro/") ||
+    caminho === "/editar" ||
+    caminho.startsWith("/editar/") ||
+    caminho === "/emprestimos" ||
+    caminho.startsWith("/emprestimos/") ||
+    caminho === "/reservas" ||
+    caminho.startsWith("/reservas/") ||
+    caminho === "/relatorios" ||
+    caminho.startsWith("/relatorios/") ||
+    caminho === "/turmas" ||
+    caminho.startsWith("/turmas/") ||
+    caminho === "/configuracoes" ||
+    caminho.startsWith("/configuracoes/");
 
   if (areaAdministrativa && !user) {
     const url = request.nextUrl.clone();
