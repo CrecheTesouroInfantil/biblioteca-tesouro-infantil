@@ -242,43 +242,47 @@ export default function Home() {
 
               </div>
 
-              {/* ÁREA RESERVADA PARA OS BONEQUINHOS */}
+              {/* BONEQUINHOS DA CRECHE */}
 
               <div
                 className="
-                  hidden md:flex
                   relative
                   w-full
-                  lg:w-[330px]
-                  h-[190px]
+                  lg:w-[390px]
+                  h-[250px]
+                  flex
                   items-end
                   justify-center
+                  shrink-0
                 "
               >
 
                 <div
                   className="
                     absolute
-                    bottom-0
-                    w-[270px]
-                    h-[110px]
+                    bottom-2
+                    w-[320px]
+                    h-[80px]
                     rounded-full
                     bg-white/10
                     blur-sm
                   "
                 />
 
-                <div className="relative text-center">
-
-                  <div className="text-7xl">
-                    📚
-                  </div>
-
-                  <p className="text-xs text-blue-100 mt-2 font-semibold">
-                    Um acervo cheio de descobertas
-                  </p>
-
-                </div>
+                <img
+                  src="/imagem02.png"
+                  alt="Crianças da Creche Tesouro Infantil usando o uniforme"
+                  className="
+                    relative
+                    z-10
+                    w-full
+                    max-w-[390px]
+                    h-full
+                    object-contain
+                    object-bottom
+                    drop-shadow-[0_12px_18px_rgba(0,0,0,0.18)]
+                  "
+                />
 
               </div>
 
