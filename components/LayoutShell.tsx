@@ -16,7 +16,8 @@ export default function LayoutShell({
   const paginaPublica =
     pathname === "/biblioteca" ||
     pathname.startsWith("/livro/") ||
-    pathname === "/login";
+    pathname === "/login" ||
+    pathname === "/redefinir-senha";
 
   const areaAdministrativa =
     pathname === "/admin" ||
@@ -43,24 +44,36 @@ export default function LayoutShell({
 
     let ativo = true;
 
-    async function verificarLogin() {
+    async function verificarSessao() {
       const {
-        data: { user },
-      } = await supabaseBrowser.auth.getUser();
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
 
-      if (!user && ativo) {
+      if (!ativo) return;
+
+      if (!session) {
         router.replace("/login");
       }
     }
 
-    verificarLogin();
+    verificarSessao();
 
     const {
       data: { subscription },
     } = supabaseBrowser.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!session && ativo) {
+      (event, session) => {
+        if (!ativo) return;
+
+        if (event === "SIGNED_OUT") {
           router.replace("/login");
+          return;
+        }
+
+        if (
+          event === "SIGNED_IN" &&
+          session
+        ) {
+          return;
         }
       }
     );
@@ -76,20 +89,6 @@ export default function LayoutShell({
       <main className="min-h-screen w-full min-w-0 bg-blue-50">
         {children}
       </main>
-    );
-  }
-
-  if (areaAdministrativa) {
-    return (
-      <>
-        <Sidebar />
-
-        <main className="min-h-screen w-full min-w-0 bg-blue-50 md:ml-72 md:w-[calc(100%-18rem)]">
-          <div className="w-full min-w-0 max-w-full">
-            {children}
-          </div>
-        </main>
-      </>
     );
   }
 
