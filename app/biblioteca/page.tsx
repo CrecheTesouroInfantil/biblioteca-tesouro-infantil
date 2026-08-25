@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -194,6 +195,30 @@ export default function BibliotecaPage() {
           <div className="absolute -left-20 -bottom-32 w-64 h-64 rounded-full bg-white/5" />
 
           <div className="relative p-6 sm:p-8">
+
+            {/* BOTÃO VOLTAR */}
+
+            <Link
+              href="/"
+              className="
+                inline-flex
+                items-center
+                gap-2
+                bg-white/10
+                hover:bg-white/20
+                border border-white/20
+                text-white
+                px-4 py-2.5
+                rounded-xl
+                text-sm
+                font-bold
+                transition
+                backdrop-blur-sm
+                mb-6
+              "
+            >
+              ← Voltar para o início
+            </Link>
 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 
