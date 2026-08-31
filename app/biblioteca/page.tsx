@@ -23,6 +23,9 @@ export default function BibliotecaPage() {
   const [disponibilidade, setDisponibilidade] =
     useState("Todos");
 
+  const [tamanhoLivros, setTamanhoLivros] =
+    useState<"pequeno" | "medio" | "grande">("medio");
+
   useEffect(() => {
     buscarLivros();
 
@@ -111,6 +114,9 @@ export default function BibliotecaPage() {
         livro.faixa_etaria
           ?.toLowerCase()
           .includes(textoPesquisa) ||
+        livro.tema
+          ?.toLowerCase()
+          .includes(textoPesquisa) ||
         livro.codigo
           ?.toLowerCase()
           .includes(textoPesquisa) ||
@@ -195,8 +201,6 @@ export default function BibliotecaPage() {
           <div className="absolute -left-20 -bottom-32 w-64 h-64 rounded-full bg-white/5" />
 
           <div className="relative p-6 sm:p-8">
-
-            {/* BOTÃO VOLTAR */}
 
             <Link
               href="/"
@@ -534,37 +538,96 @@ export default function BibliotecaPage() {
 
           </div>
 
-          {filtrosAtivos && (
-            <div className="flex flex-wrap gap-2">
+          {/* TAMANHO DOS LIVROS */}
 
-              {faixaSelecionada !== "Todas" && (
-                <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold">
-                  👶 {faixaSelecionada}
-                </span>
-              )}
+          <div className="bg-white border border-gray-200 rounded-2xl p-2 shadow-sm">
 
-              {categoriaSelecionada !== "Todas" && (
-                <span className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-xs font-bold">
-                  🏷️ {categoriaSelecionada}
-                </span>
-              )}
+            <p className="text-xs font-bold text-gray-500 px-2 pb-2">
+              Tamanho dos livros
+            </p>
 
-              {localSelecionado !== "Todos" && (
-                <span className="bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs font-bold">
-                  📦 {localSelecionado}
-                </span>
-              )}
+            <div className="flex gap-1">
 
-              {disponibilidade !== "Todos" && (
-                <span className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold">
-                  ✓ {disponibilidade}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={() => setTamanhoLivros("pequeno")}
+                className={`
+                  px-3 py-2 rounded-xl text-xs font-bold transition
+                  ${
+                    tamanhoLivros === "pequeno"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                  }
+                `}
+              >
+                🔹 Pequeno
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTamanhoLivros("medio")}
+                className={`
+                  px-3 py-2 rounded-xl text-xs font-bold transition
+                  ${
+                    tamanhoLivros === "medio"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                  }
+                `}
+              >
+                🔸 Médio
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTamanhoLivros("grande")}
+                className={`
+                  px-3 py-2 rounded-xl text-xs font-bold transition
+                  ${
+                    tamanhoLivros === "grande"
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                  }
+                `}
+              >
+                🔶 Grande
+              </button>
 
             </div>
-          )}
+
+          </div>
 
         </div>
+
+        {filtrosAtivos && (
+          <div className="flex flex-wrap gap-2">
+
+            {faixaSelecionada !== "Todas" && (
+              <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                👶 {faixaSelecionada}
+              </span>
+            )}
+
+            {categoriaSelecionada !== "Todas" && (
+              <span className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                🏷️ {categoriaSelecionada}
+              </span>
+            )}
+
+            {localSelecionado !== "Todos" && (
+              <span className="bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                📦 {localSelecionado}
+              </span>
+            )}
+
+            {disponibilidade !== "Todos" && (
+              <span className="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                ✓ {disponibilidade}
+              </span>
+            )}
+
+          </div>
+        )}
 
         {/* LIVROS */}
 
@@ -573,6 +636,7 @@ export default function BibliotecaPage() {
           <Biblioteca
             livros={livrosFiltrados}
             publico={true}
+            tamanho={tamanhoLivros}
           />
 
         ) : (
