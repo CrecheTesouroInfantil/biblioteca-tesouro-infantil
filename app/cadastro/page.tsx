@@ -11,6 +11,7 @@ export default function CadastroLivro() {
   const [nome, setNome] = useState("");
   const [autor, setAutor] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [tema, setTema] = useState("");
   const [faixaEtaria, setFaixaEtaria] = useState("");
   const [quantidade, setQuantidade] = useState(1);
   const [local, setLocal] = useState("");
@@ -59,6 +60,7 @@ export default function CadastroLivro() {
             nome: nome.trim(),
             autor: autor.trim(),
             categoria,
+            tema: tema.trim(),
             faixa_etaria: faixaEtaria,
             quantidade,
             local,
@@ -149,6 +151,8 @@ export default function CadastroLivro() {
             setAutor={setAutor}
             categoria={categoria}
             setCategoria={setCategoria}
+            tema={tema}
+            setTema={setTema}
             faixaEtaria={faixaEtaria}
             setFaixaEtaria={setFaixaEtaria}
             quantidade={quantidade}

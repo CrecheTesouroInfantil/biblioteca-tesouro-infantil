@@ -185,6 +185,24 @@ export default function LivroCard({
 
         </div>
 
+        {/* TEMA */}
+
+        {livro.tema && (
+
+          <div className="mt-4 bg-purple-50 border border-purple-100 rounded-xl p-4">
+
+            <p className="text-[10px] uppercase tracking-wide font-bold text-purple-500">
+              💭 Tema
+            </p>
+
+            <p className="text-sm text-gray-700 mt-1 leading-relaxed">
+              {livro.tema}
+            </p>
+
+          </div>
+
+        )}
+
         {/* DETALHES */}
 
         <div className="grid grid-cols-2 gap-3 mt-5">
@@ -351,6 +369,7 @@ export default function LivroCard({
                   hover:border-red-200
                   rounded-xl
                   py-2.5
+                  text-center
                   font-bold
                   text-sm
                   transition

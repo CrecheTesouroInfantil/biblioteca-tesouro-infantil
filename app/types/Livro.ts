@@ -9,6 +9,8 @@ export interface Livro {
 
   categoria: string | null;
 
+  tema: string | null;
+
   faixa_etaria: string | null;
 
   quantidade: number | null;

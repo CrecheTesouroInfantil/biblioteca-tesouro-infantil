@@ -14,6 +14,9 @@ interface FormLivroProps {
   categoria: string;
   setCategoria: (valor: string) => void;
 
+  tema: string;
+  setTema: (valor: string) => void;
+
   faixaEtaria: string;
   setFaixaEtaria: (valor: string) => void;
 
@@ -37,6 +40,7 @@ const categorias = [
   "Inclusão",
   "Alfabetização",
   "Datas Comemorativas",
+  "Imaginação",
 ];
 
 const faixas = [
@@ -178,6 +182,28 @@ export default function FormLivro(props: FormLivroProps) {
           </select>
         </div>
 
+      </div>
+
+      {/* TEMA */}
+
+      <div>
+        <label className="block text-gray-700 mb-2 font-bold">
+          📝 Tema
+        </label>
+
+        <textarea
+          value={props.tema}
+          onChange={(e) =>
+            props.setTema(e.target.value)
+          }
+          placeholder="Escreva um breve resumo sobre o que o livro fala..."
+          rows={4}
+          className="w-full border border-gray-300 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+
+        <p className="text-xs text-gray-500 mt-1">
+          Escreva um pequeno resumo sobre a história e os principais temas trabalhados no livro.
+        </p>
       </div>
 
       {/* LOCAL / QUANTIDADE */}
@@ -368,6 +394,13 @@ export default function FormLivro(props: FormLivroProps) {
             👶 Faixa:{" "}
             <strong>
               {props.faixaEtaria || "Não selecionada"}
+            </strong>
+          </p>
+
+          <p className="sm:col-span-2">
+            📝 Tema:{" "}
+            <strong>
+              {props.tema || "Não informado"}
             </strong>
           </p>
 

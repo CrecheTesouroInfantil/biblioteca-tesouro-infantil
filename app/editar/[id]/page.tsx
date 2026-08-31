@@ -14,6 +14,7 @@ export default function EditarLivro() {
   const [nome, setNome] = useState("");
   const [autor, setAutor] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [tema, setTema] = useState("");
   const [faixaEtaria, setFaixaEtaria] = useState("");
   const [quantidade, setQuantidade] = useState(1);
   const [local, setLocal] = useState("");
@@ -48,6 +49,7 @@ export default function EditarLivro() {
     setNome(data.nome || "");
     setAutor(data.autor || "");
     setCategoria(data.categoria || "");
+    setTema(data.tema || "");
     setFaixaEtaria(data.faixa_etaria || "");
     setQuantidade(Math.max(data.quantidade ?? 1, 1));
     setLocal(data.local || "");
@@ -91,6 +93,7 @@ export default function EditarLivro() {
           nome: nome.trim(),
           autor: autor.trim(),
           categoria,
+          tema: tema.trim(),
           faixa_etaria: faixaEtaria,
           quantidade,
           local,
@@ -170,6 +173,8 @@ export default function EditarLivro() {
             setAutor={setAutor}
             categoria={categoria}
             setCategoria={setCategoria}
+            tema={tema}
+            setTema={setTema}
             faixaEtaria={faixaEtaria}
             setFaixaEtaria={setFaixaEtaria}
             quantidade={quantidade}
