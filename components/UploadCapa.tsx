@@ -10,23 +10,22 @@ interface UploadCapaProps {
 export default function UploadCapa({
   onUpload,
 }: UploadCapaProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galeriaRef = useRef<HTMLInputElement>(null);
 
-  const [enviando, setEnviando] =
-    useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   async function prepararImagem(
     arquivo: File
   ): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const url = URL.createObjectURL(arquivo);
-
       const imagem = new Image();
 
       imagem.onload = () => {
         try {
-          const larguraMaxima = 1600;
-          const alturaMaxima = 1600;
+          const larguraMaxima = 2000;
+          const alturaMaxima = 2000;
 
           let largura = imagem.width;
           let altura = imagem.height;
@@ -70,6 +69,9 @@ export default function UploadCapa({
             return;
           }
 
+          contexto.imageSmoothingEnabled = true;
+          contexto.imageSmoothingQuality = "high";
+
           contexto.drawImage(
             imagem,
             0,
@@ -85,7 +87,7 @@ export default function UploadCapa({
               if (!blob) {
                 reject(
                   new Error(
-                    "Não foi possível converter a imagem."
+                    "Não foi possível preparar a imagem."
                   )
                 );
 
@@ -95,7 +97,7 @@ export default function UploadCapa({
               resolve(blob);
             },
             "image/jpeg",
-            0.85
+            0.92
           );
         } catch (erro) {
           URL.revokeObjectURL(url);
@@ -108,7 +110,7 @@ export default function UploadCapa({
 
         reject(
           new Error(
-            "O celular não conseguiu processar essa imagem."
+            "Não foi possível processar essa imagem."
           )
         );
       };
@@ -202,8 +204,12 @@ export default function UploadCapa({
     } finally {
       setEnviando(false);
 
-      if (inputRef.current) {
-        inputRef.current.value = "";
+      if (cameraRef.current) {
+        cameraRef.current.value = "";
+      }
+
+      if (galeriaRef.current) {
+        galeriaRef.current.value = "";
       }
     }
   }
@@ -211,8 +217,10 @@ export default function UploadCapa({
   return (
     <div className="space-y-3">
 
+      {/* CÂMERA */}
+
       <input
-        ref={inputRef}
+        ref={cameraRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -224,7 +232,7 @@ export default function UploadCapa({
         type="button"
         disabled={enviando}
         onClick={() =>
-          inputRef.current?.click()
+          cameraRef.current?.click()
         }
         className="
           w-full
@@ -233,19 +241,52 @@ export default function UploadCapa({
           disabled:bg-gray-400
           disabled:cursor-not-allowed
           text-white
-          rounded-lg
-          py-3
+          rounded-xl
+          py-3.5
           font-bold
+          transition
         "
       >
         {enviando
           ? "📤 Enviando imagem..."
-          : "📷 Tirar foto ou escolher imagem"}
+          : "📷 Tirar foto da capa"}
+      </button>
+
+      {/* GALERIA */}
+
+      <input
+        ref={galeriaRef}
+        type="file"
+        accept="image/*"
+        onChange={enviarImagem}
+        className="hidden"
+      />
+
+      <button
+        type="button"
+        disabled={enviando}
+        onClick={() =>
+          galeriaRef.current?.click()
+        }
+        className="
+          w-full
+          bg-blue-600
+          hover:bg-blue-700
+          disabled:bg-gray-400
+          disabled:cursor-not-allowed
+          text-white
+          rounded-xl
+          py-3.5
+          font-bold
+          transition
+        "
+      >
+        🖼️ Escolher imagem da galeria
       </button>
 
       <p className="text-xs text-gray-500 text-center">
-        A foto será ajustada automaticamente
-        para facilitar o envio pelo celular.
+        Para melhor qualidade, prefira uma imagem
+        nítida da capa.
       </p>
 
     </div>
