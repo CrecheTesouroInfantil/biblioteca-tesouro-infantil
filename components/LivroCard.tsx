@@ -64,7 +64,7 @@ export default function LivroCard({
         className="block relative"
       >
 
-        <div className="relative h-[300px] sm:h-[330px] bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+        <div className="relative h-[300px] sm:h-[330px] bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden flex items-center justify-center">
 
           {livro.capa ? (
 
@@ -74,7 +74,8 @@ export default function LivroCard({
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
               className="
-                object-cover
+                object-contain
+                p-3
                 group-hover:scale-105
                 transition-transform
                 duration-500
