@@ -16,30 +16,45 @@ interface LivroImportado {
 }
 
 const categorias = [
-  "Literatura Infantil",
-  "Histórias Bíblicas",
-  "Animais",
-  "Natureza",
-  "Emoções",
-  "Família",
-  "Inclusão",
-  "Alfabetização",
-  "Datas Comemorativas",
-  "Imaginação",
+  "FORMAS",
+  "CORES",
+  "NÚMEROS E QUANTIDADES",
+  "ALFABETO E LETRAS",
+  "ANIMAIS",
+  "NATUREZA",
+  "MEIO AMBIENTE",
+  "CORPO HUMANO",
+  "EMOÇÕES",
+  "FAMÍLIA",
+  "AMIZADE",
+  "IDENTIDADE",
+  "INCLUSÃO E DIFERENÇAS",
+  "ALIMENTAÇÃO",
+  "HIGIENE",
+  "TRÂNSITO",
+  "PROFISSÕES",
+  "MORADIA",
+  "BRINCADEIRAS",
+  "IMAGINAÇÃO",
+  "MÚSICA E RIMAS",
+  "HISTÓRIAS BÍBLICAS",
+  "DATAS COMEMORATIVAS",
+  "VALORES E CONVIVÊNCIA",
+  "OUTROS",
 ];
 
 const faixas = [
-  "Berçário",
-  "Maternal I",
-  "Maternal II",
-  "Pré-escola",
-  "Todas",
+  "BERÇÁRIO",
+  "MATERNAL I",
+  "MATERNAL II",
+  "PRÉ-ESCOLA",
+  "TODAS",
 ];
 
 const locais = [
-  "Caixa 1",
-  "Caixa 2",
-  "Caixa 3",
+  "CAIXA 1",
+  "CAIXA 2",
+  "CAIXA 3",
 ];
 
 export default function ImportarLivros() {
@@ -73,6 +88,66 @@ export default function ImportarLivros() {
     setVerificandoUsuario(false);
   }
 
+  function normalizarFaixas(valor: string) {
+    const faixa = valor
+      .trim()
+      .toUpperCase();
+
+    if (!faixa) {
+      return "TODAS";
+    }
+
+    if (faixa === "TODAS") {
+      return "TODAS";
+    }
+
+    const faixasSelecionadas = faixa
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .filter((item) =>
+        faixas.includes(item)
+      )
+      .filter((item) => item !== "TODAS");
+
+    if (faixasSelecionadas.length === 0) {
+      return "TODAS";
+    }
+
+    return faixas
+      .filter((item) =>
+        faixasSelecionadas.includes(item)
+      )
+      .filter((item) => item !== "TODAS")
+      .join(", ");
+  }
+
+  function normalizarCategoria(valor: string) {
+    const categoria = valor
+      .trim()
+      .toUpperCase();
+
+    const encontrada = categorias.find(
+      (item) =>
+        item.toUpperCase() === categoria
+    );
+
+    return encontrada || categoria;
+  }
+
+  function normalizarLocal(valor: string) {
+    const local = valor
+      .trim()
+      .toUpperCase();
+
+    const encontrado = locais.find(
+      (item) =>
+        item.toUpperCase() === local
+    );
+
+    return encontrado || "CAIXA 1";
+  }
+
   function analisarLista() {
     setMensagem("");
 
@@ -96,27 +171,30 @@ export default function ImportarLivros() {
       const [
         nome = "",
         autor = "",
-        categoria = "Literatura Infantil",
-        faixa_etaria = "Todas",
+        categoria = "OUTROS",
+        faixa_etaria = "TODAS",
         tema = "",
         quantidade = "1",
-        local = "Caixa 1",
+        local = "CAIXA 1",
         capa = "",
       ] = partes;
 
       if (!nome) continue;
 
       resultado.push({
-        nome,
-        autor,
-        categoria,
-        faixa_etaria: faixa_etaria || "Todas",
-        tema,
+        nome: nome.toUpperCase(),
+        autor: autor.toUpperCase(),
+        categoria: normalizarCategoria(
+          categoria
+        ),
+        faixa_etaria:
+          normalizarFaixas(faixa_etaria),
+        tema: tema.toUpperCase(),
         quantidade: Math.max(
           1,
           Number(quantidade) || 1
         ),
-        local,
+        local: normalizarLocal(local),
         capa,
       });
     }
@@ -132,7 +210,9 @@ export default function ImportarLivros() {
 
   async function importarLivros() {
     if (livros.length === 0) {
-      alert("Primeiro prepare a lista de livros.");
+      alert(
+        "Primeiro prepare a lista de livros."
+      );
       return;
     }
 
@@ -140,9 +220,10 @@ export default function ImportarLivros() {
     setMensagem("");
 
     try {
-      // CONFERE NOVAMENTE O USUÁRIO ANTES DE CADASTRAR
-      const { data: usuarioData, error: usuarioError } =
-        await supabase.auth.getUser();
+      const {
+        data: usuarioData,
+        error: usuarioError,
+      } = await supabase.auth.getUser();
 
       if (
         usuarioError ||
@@ -156,22 +237,32 @@ export default function ImportarLivros() {
       const dados = livros.map((livro) => ({
         nome: livro.nome.trim(),
         autor: livro.autor.trim(),
-        categoria: livro.categoria || null,
+        categoria:
+          livro.categoria || "OUTROS",
         faixa_etaria:
-          livro.faixa_etaria || "Todas",
-        tema: livro.tema.trim() || null,
+          livro.faixa_etaria || "TODAS",
+        tema:
+          livro.tema.trim() || null,
         quantidade: livro.quantidade,
-        local: livro.local || null,
-        capa: livro.capa.trim() || null,
+        local: livro.local || "CAIXA 1",
+        capa:
+          livro.capa.trim() || null,
       }));
 
-      const { data, error } = await supabase
+      const {
+        data,
+        error,
+      } = await supabase
         .from("livros")
         .insert(dados)
         .select("id");
 
       if (error) {
-        console.log("ERRO SUPABASE:", error);
+        console.log(
+          "ERRO SUPABASE:",
+          error
+        );
+
         throw error;
       }
 
@@ -181,17 +272,18 @@ export default function ImportarLivros() {
         );
       }
 
-      // GERA OS CÓDIGOS DOS LIVROS
       for (const livro of data) {
-        const codigo = `LIV-${String(
-          livro.id
-        ).padStart(6, "0")}`;
+        const codigo =
+          `LIV-${String(
+            livro.id
+          ).padStart(6, "0")}`;
 
-        const { error: erroCodigo } =
-          await supabase
-            .from("livros")
-            .update({ codigo })
-            .eq("id", livro.id);
+        const {
+          error: erroCodigo,
+        } = await supabase
+          .from("livros")
+          .update({ codigo })
+          .eq("id", livro.id);
 
         if (erroCodigo) {
           console.log(
@@ -227,7 +319,9 @@ export default function ImportarLivros() {
   if (verificandoUsuario) {
     return (
       <main className="min-h-screen bg-blue-50 flex items-center justify-center p-6">
+
         <div className="bg-white rounded-3xl shadow-xl p-10 text-center">
+
           <p className="text-lg font-bold text-gray-700">
             🔐 Verificando acesso...
           </p>
@@ -235,7 +329,9 @@ export default function ImportarLivros() {
           <p className="text-sm text-gray-500 mt-2">
             Só um momentinho.
           </p>
+
         </div>
+
       </main>
     );
   }
@@ -243,6 +339,7 @@ export default function ImportarLivros() {
   if (!usuarioAutenticado) {
     return (
       <main className="min-h-screen bg-blue-50 flex items-center justify-center p-6">
+
         <div className="bg-white rounded-3xl shadow-xl p-10 text-center max-w-md w-full">
 
           <div className="text-5xl mb-4">
@@ -277,6 +374,7 @@ export default function ImportarLivros() {
           </Link>
 
         </div>
+
       </main>
     );
   }
@@ -288,9 +386,12 @@ export default function ImportarLivros() {
 
         <div className="bg-white rounded-3xl shadow-xl p-6 md:p-8">
 
+          {/* CABEÇALHO */}
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
 
             <div>
+
               <h1 className="text-3xl md:text-4xl font-extrabold text-blue-700">
                 📥 Importar livros
               </h1>
@@ -298,6 +399,7 @@ export default function ImportarLivros() {
               <p className="text-gray-500 mt-2">
                 Cadastre vários livros de uma vez.
               </p>
+
             </div>
 
             <Link
@@ -308,6 +410,8 @@ export default function ImportarLivros() {
             </Link>
 
           </div>
+
+          {/* COMO PREENCHER */}
 
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-6">
 
@@ -325,14 +429,17 @@ export default function ImportarLivros() {
             </div>
 
             <p className="text-xs text-gray-500 mt-3">
+              A faixa etária pode ter várias opções.
               Exemplo:
             </p>
 
             <div className="bg-white rounded-xl p-4 mt-2 font-mono text-xs text-gray-600 overflow-x-auto">
-              A BOCA DO SAPO; MARY FRANÇA; ANIMAIS; TODAS; UMA HISTÓRIA DIVERTIDA SOBRE UM SAPO; 1; CAIXA 1;
+              FORMAS; CLAUDIA RUEDA; FORMAS; BERÇÁRIO, MATERNAL I, MATERNAL II; TRABALHA FORMAS; 1; CAIXA 1;
             </div>
 
           </div>
+
+          {/* LISTA */}
 
           <div className="mb-6">
 
@@ -351,8 +458,8 @@ export default function ImportarLivros() {
 Um livro por linha.
 
 Exemplo:
-A BOCA DO SAPO; MARY FRANÇA; ANIMAIS; TODAS; UMA HISTÓRIA DIVERTIDA SOBRE UM SAPO; 1; CAIXA 1;
-MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHORRO QUE DESAPARECE; 1; CAIXA 1;`}
+A BOCA DO SAPO; MARY FRANÇA; ANIMAIS; MATERNAL I, MATERNAL II; UMA HISTÓRIA SOBRE UM SAPO; 1; CAIXA 1;
+FORMAS; CLAUDIA RUEDA; FORMAS; BERÇÁRIO, MATERNAL I, MATERNAL II, PRÉ-ESCOLA; UMA HISTÓRIA SOBRE FORMAS; 1; CAIXA 1;`}
               className="
                 w-full
                 border border-gray-300
@@ -367,6 +474,8 @@ MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHO
             />
 
           </div>
+
+          {/* BOTÕES */}
 
           <div className="flex flex-col sm:flex-row gap-3 mb-8">
 
@@ -412,11 +521,15 @@ MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHO
 
           </div>
 
+          {/* MENSAGEM */}
+
           {mensagem && (
             <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-xl p-4 mb-6 font-bold">
               {mensagem}
             </div>
           )}
+
+          {/* CONFERÊNCIA */}
 
           {livros.length > 0 && (
 
@@ -425,6 +538,7 @@ MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHO
               <div className="flex items-center justify-between mb-4">
 
                 <div>
+
                   <h2 className="text-xl font-extrabold text-gray-800">
                     Conferência
                   </h2>
@@ -432,6 +546,7 @@ MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHO
                   <p className="text-sm text-gray-500">
                     {livros.length} livro(s) encontrado(s)
                   </p>
+
                 </div>
 
               </div>
@@ -468,7 +583,7 @@ MEU CACHORRO SUMIU; ELIANDRO ROCHA; ANIMAIS; TODAS; UMA HISTÓRIA SOBRE UM CACHO
                           </span>
 
                           <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">
-                            {livro.faixa_etaria}
+                            👶 {livro.faixa_etaria}
                           </span>
 
                           <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
