@@ -14,9 +14,6 @@ interface FormLivroProps {
   categoria: string;
   setCategoria: (valor: string) => void;
 
-  tema: string;
-  setTema: (valor: string) => void;
-
   faixaEtaria: string;
   setFaixaEtaria: (valor: string) => void;
 
@@ -31,33 +28,83 @@ interface FormLivroProps {
 }
 
 const categorias = [
-  "Literatura Infantil",
-  "Histórias Bíblicas",
-  "Animais",
-  "Natureza",
-  "Emoções",
-  "Família",
-  "Inclusão",
-  "Alfabetização",
-  "Datas Comemorativas",
-  "Imaginação",
+  "FORMAS",
+  "CORES",
+  "NÚMEROS E QUANTIDADES",
+  "ALFABETO E LETRAS",
+  "ANIMAIS",
+  "NATUREZA",
+  "MEIO AMBIENTE",
+  "CORPO HUMANO",
+  "EMOÇÕES",
+  "FAMÍLIA",
+  "AMIZADE",
+  "IDENTIDADE",
+  "INCLUSÃO E DIFERENÇAS",
+  "ALIMENTAÇÃO",
+  "HIGIENE",
+  "TRÂNSITO",
+  "PROFISSÕES",
+  "MORADIA",
+  "BRINCADEIRAS",
+  "IMAGINAÇÃO",
+  "MÚSICA E RIMAS",
+  "HISTÓRIAS BÍBLICAS",
+  "DATAS COMEMORATIVAS",
+  "VALORES E CONVIVÊNCIA",
+  "OUTROS",
 ];
 
 const faixas = [
-  "Berçário",
-  "Maternal I",
-  "Maternal II",
-  "Pré-escola",
-  "Todas",
+  "BERÇÁRIO",
+  "MATERNAL I",
+  "MATERNAL II",
+  "PRÉ-ESCOLA",
 ];
 
 const locais = [
-  "Caixa 1",
-  "Caixa 2",
-  "Caixa 3",
+  "CAIXA 1",
+  "CAIXA 2",
+  "CAIXA 3",
 ];
 
 export default function FormLivro(props: FormLivroProps) {
+  const faixasSelecionadas = props.faixaEtaria
+    ? props.faixaEtaria
+        .split(",")
+        .map((faixa) => faixa.trim())
+        .filter(Boolean)
+    : [];
+
+  function alternarFaixa(faixa: string) {
+    let novasFaixas = [...faixasSelecionadas];
+
+    if (novasFaixas.includes(faixa)) {
+      novasFaixas = novasFaixas.filter(
+        (item) => item !== faixa
+      );
+    } else {
+      novasFaixas.push(faixa);
+    }
+
+    novasFaixas.sort(
+      (a, b) =>
+        faixas.indexOf(a) - faixas.indexOf(b)
+    );
+
+    props.setFaixaEtaria(
+      novasFaixas.join(", ")
+    );
+  }
+
+  function selecionarTodas() {
+    props.setFaixaEtaria("TODAS");
+  }
+
+  function limparFaixas() {
+    props.setFaixaEtaria("");
+  }
+
   return (
     <div className="space-y-6">
 
@@ -126,9 +173,11 @@ export default function FormLivro(props: FormLivroProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
+        {/* CATEGORIA */}
+
         <div>
           <label className="block text-gray-700 mb-2 font-bold">
-            🏷️ Categoria *
+            🏷️ Tema pedagógico *
           </label>
 
           <select
@@ -140,7 +189,7 @@ export default function FormLivro(props: FormLivroProps) {
             className="w-full border border-gray-300 rounded-xl p-3 bg-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">
-              Selecione uma categoria
+              Selecione um tema
             </option>
 
             {categorias.map((categoria) => (
@@ -154,56 +203,126 @@ export default function FormLivro(props: FormLivroProps) {
           </select>
         </div>
 
+        {/* FAIXA ETÁRIA */}
+
         <div>
           <label className="block text-gray-700 mb-2 font-bold">
             👶 Faixa etária *
           </label>
 
-          <select
-            required
-            value={props.faixaEtaria}
-            onChange={(e) =>
-              props.setFaixaEtaria(e.target.value)
-            }
-            className="w-full border border-gray-300 rounded-xl p-3 bg-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="">
-              Selecione a faixa etária
-            </option>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
 
-            {faixas.map((faixa) => (
-              <option
-                key={faixa}
-                value={faixa}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+              {faixas.map((faixa) => {
+                const selecionada =
+                  faixasSelecionadas.includes(
+                    faixa
+                  );
+
+                return (
+                  <label
+                    key={faixa}
+                    className={`
+                      flex
+                      items-center
+                      gap-3
+                      p-3
+                      rounded-xl
+                      border
+                      cursor-pointer
+                      transition
+                      ${
+                        selecionada
+                          ? "bg-blue-50 border-blue-300"
+                          : "bg-white border-gray-200 hover:bg-gray-50"
+                      }
+                    `}
+                  >
+
+                    <input
+                      type="checkbox"
+                      checked={selecionada}
+                      onChange={() =>
+                        alternarFaixa(faixa)
+                      }
+                      className="w-5 h-5 accent-blue-600"
+                    />
+
+                    <span
+                      className={`
+                        text-sm
+                        font-bold
+                        ${
+                          selecionada
+                            ? "text-blue-700"
+                            : "text-gray-700"
+                        }
+                      `}
+                    >
+                      {faixa}
+                    </span>
+
+                  </label>
+                );
+              })}
+
+            </div>
+
+            {/* TODAS */}
+
+            <button
+              type="button"
+              onClick={selecionarTodas}
+              className={`
+                w-full
+                mt-3
+                py-2.5
+                rounded-xl
+                border
+                font-bold
+                text-sm
+                transition
+                ${
+                  props.faixaEtaria === "TODAS"
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"
+                }
+              `}
+            >
+              👶 TODAS AS FAIXAS
+            </button>
+
+            {/* LIMPAR */}
+
+            {props.faixaEtaria && (
+              <button
+                type="button"
+                onClick={limparFaixas}
+                className="w-full mt-2 text-xs font-bold text-gray-500 hover:text-red-600"
               >
-                {faixa}
-              </option>
-            ))}
-          </select>
+                Limpar seleção
+              </button>
+            )}
+
+            {/* RESUMO */}
+
+            <div className="mt-3 bg-white border border-gray-200 rounded-xl p-3">
+
+              <p className="text-[10px] uppercase tracking-wide font-bold text-gray-400">
+                Faixas selecionadas
+              </p>
+
+              <p className="text-sm font-bold text-gray-700 mt-1">
+                {props.faixaEtaria ||
+                  "Nenhuma selecionada"}
+              </p>
+
+            </div>
+
+          </div>
         </div>
 
-      </div>
-
-      {/* TEMA */}
-
-      <div>
-        <label className="block text-gray-700 mb-2 font-bold">
-          📝 Tema
-        </label>
-
-        <textarea
-          value={props.tema}
-          onChange={(e) =>
-            props.setTema(e.target.value)
-          }
-          placeholder="Escreva um breve resumo sobre o que o livro fala..."
-          rows={4}
-          className="w-full border border-gray-300 rounded-xl p-3 outline-none resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-
-        <p className="text-xs text-gray-500 mt-1">
-          Escreva um pequeno resumo sobre a história e os principais temas trabalhados no livro.
-        </p>
       </div>
 
       {/* LOCAL / QUANTIDADE */}
@@ -253,7 +372,9 @@ export default function FormLivro(props: FormLivroProps) {
             step={1}
             value={props.quantidade}
             onChange={(e) => {
-              const valor = Number(e.target.value);
+              const valor = Number(
+                e.target.value
+              );
 
               props.setQuantidade(
                 Number.isNaN(valor)
@@ -299,8 +420,10 @@ export default function FormLivro(props: FormLivroProps) {
 
               <img
                 src={props.capa}
-                alt={`Capa de ${props.nome || "livro"}`}
-                className="w-40 h-56 object-cover rounded-2xl shadow-lg border"
+                alt={`Capa de ${
+                  props.nome || "livro"
+                }`}
+                className="w-40 h-56 object-contain rounded-2xl shadow-lg border bg-gray-50"
               />
 
             </div>
@@ -309,7 +432,9 @@ export default function FormLivro(props: FormLivroProps) {
 
               <button
                 type="button"
-                onClick={() => props.setCapa("")}
+                onClick={() =>
+                  props.setCapa("")
+                }
                 className="bg-red-100 hover:bg-red-200 text-red-700 px-5 py-2 rounded-xl font-bold"
               >
                 🗑️ Remover capa
@@ -384,30 +509,26 @@ export default function FormLivro(props: FormLivroProps) {
           </p>
 
           <p>
-            🏷️ Categoria:{" "}
+            🏷️ Tema pedagógico:{" "}
             <strong>
-              {props.categoria || "Não selecionada"}
+              {props.categoria ||
+                "Não selecionado"}
             </strong>
           </p>
 
           <p>
             👶 Faixa:{" "}
             <strong>
-              {props.faixaEtaria || "Não selecionada"}
-            </strong>
-          </p>
-
-          <p className="sm:col-span-2">
-            📝 Tema:{" "}
-            <strong>
-              {props.tema || "Não informado"}
+              {props.faixaEtaria ||
+                "Não selecionada"}
             </strong>
           </p>
 
           <p>
             📦 Local:{" "}
             <strong>
-              {props.local || "Não informado"}
+              {props.local ||
+                "Não informado"}
             </strong>
           </p>
 

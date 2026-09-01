@@ -26,6 +26,13 @@ export default function BibliotecaPage() {
   const [tamanhoLivros, setTamanhoLivros] =
     useState<"pequeno" | "medio" | "grande">("medio");
 
+  const faixasDisponiveis = [
+    "BERÇÁRIO",
+    "MATERNAL I",
+    "MATERNAL II",
+    "PRÉ-ESCOLA",
+  ];
+
   useEffect(() => {
     buscarLivros();
 
@@ -66,16 +73,6 @@ export default function BibliotecaPage() {
       new Set(
         livros
           .map((livro) => livro.categoria)
-          .filter(Boolean)
-      )
-    ).sort();
-  }, [livros]);
-
-  const faixas = useMemo(() => {
-    return Array.from(
-      new Set(
-        livros
-          .map((livro) => livro.faixa_etaria)
           .filter(Boolean)
       )
     ).sort();
@@ -122,9 +119,40 @@ export default function BibliotecaPage() {
           .includes(textoPesquisa) ||
         String(livro.id).includes(textoPesquisa);
 
+      /*
+       * FAIXA ETÁRIA
+       *
+       * O banco pode guardar:
+       *
+       * BERÇÁRIO
+       *
+       * ou:
+       *
+       * BERÇÁRIO, MATERNAL I
+       *
+       * ou:
+       *
+       * TODAS
+       *
+       * Aqui transformamos o texto em uma lista
+       * para verificar corretamente cada faixa.
+       */
+
+      const faixasDoLivro = String(
+        livro.faixa_etaria || ""
+      )
+        .split(",")
+        .map((faixa: string) =>
+          faixa.trim().toUpperCase()
+        )
+        .filter(Boolean);
+
       const correspondeFaixa =
         faixaSelecionada === "Todas" ||
-        livro.faixa_etaria === faixaSelecionada;
+        faixasDoLivro.includes(
+          faixaSelecionada.toUpperCase()
+        ) ||
+        faixasDoLivro.includes("TODAS");
 
       const correspondeCategoria =
         categoriaSelecionada === "Todas" ||
@@ -367,7 +395,7 @@ export default function BibliotecaPage() {
                   Todas
                 </option>
 
-                {faixas.map((faixa) => (
+                {faixasDisponiveis.map((faixa) => (
                   <option
                     key={faixa}
                     value={faixa}
@@ -550,7 +578,9 @@ export default function BibliotecaPage() {
 
               <button
                 type="button"
-                onClick={() => setTamanhoLivros("pequeno")}
+                onClick={() =>
+                  setTamanhoLivros("pequeno")
+                }
                 className={`
                   px-3 py-2 rounded-xl text-xs font-bold transition
                   ${
@@ -565,7 +595,9 @@ export default function BibliotecaPage() {
 
               <button
                 type="button"
-                onClick={() => setTamanhoLivros("medio")}
+                onClick={() =>
+                  setTamanhoLivros("medio")
+                }
                 className={`
                   px-3 py-2 rounded-xl text-xs font-bold transition
                   ${
@@ -580,7 +612,9 @@ export default function BibliotecaPage() {
 
               <button
                 type="button"
-                onClick={() => setTamanhoLivros("grande")}
+                onClick={() =>
+                  setTamanhoLivros("grande")
+                }
                 className={`
                   px-3 py-2 rounded-xl text-xs font-bold transition
                   ${
@@ -598,6 +632,8 @@ export default function BibliotecaPage() {
           </div>
 
         </div>
+
+        {/* FILTROS ATIVOS */}
 
         {filtrosAtivos && (
           <div className="flex flex-wrap gap-2">
