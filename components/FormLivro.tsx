@@ -14,6 +14,9 @@ interface FormLivroProps {
   categoria: string;
   setCategoria: (valor: string) => void;
 
+  tema?: string;
+  setTema?: (valor: string) => void;
+
   faixaEtaria: string;
   setFaixaEtaria: (valor: string) => void;
 
@@ -69,12 +72,15 @@ const locais = [
 ];
 
 export default function FormLivro(props: FormLivroProps) {
-  const faixasSelecionadas = props.faixaEtaria
-    ? props.faixaEtaria
-        .split(",")
-        .map((faixa) => faixa.trim())
-        .filter(Boolean)
-    : [];
+  const faixasSelecionadas =
+    props.faixaEtaria === "TODAS"
+      ? []
+      : props.faixaEtaria
+      ? props.faixaEtaria
+          .split(",")
+          .map((faixa) => faixa.trim())
+          .filter(Boolean)
+      : [];
 
   function alternarFaixa(faixa: string) {
     let novasFaixas = [...faixasSelecionadas];
@@ -169,7 +175,7 @@ export default function FormLivro(props: FormLivroProps) {
 
       </div>
 
-      {/* CATEGORIA / FAIXA */}
+      {/* TEMA PEDAGÓGICO / FAIXA */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
@@ -269,8 +275,6 @@ export default function FormLivro(props: FormLivroProps) {
 
             </div>
 
-            {/* TODAS */}
-
             <button
               type="button"
               onClick={selecionarTodas}
@@ -293,8 +297,6 @@ export default function FormLivro(props: FormLivroProps) {
               👶 TODAS AS FAIXAS
             </button>
 
-            {/* LIMPAR */}
-
             {props.faixaEtaria && (
               <button
                 type="button"
@@ -304,8 +306,6 @@ export default function FormLivro(props: FormLivroProps) {
                 Limpar seleção
               </button>
             )}
-
-            {/* RESUMO */}
 
             <div className="mt-3 bg-white border border-gray-200 rounded-xl p-3">
 
@@ -324,6 +324,43 @@ export default function FormLivro(props: FormLivroProps) {
         </div>
 
       </div>
+
+      {/* TEMA / RESUMO DO LIVRO */}
+
+      {props.setTema && (
+        <div>
+
+          <label className="block text-gray-700 mb-2 font-bold">
+            💭 Tema / resumo do livro
+          </label>
+
+          <textarea
+            rows={4}
+            value={props.tema || ""}
+            onChange={(e) =>
+              props.setTema?.(e.target.value)
+            }
+            placeholder="Escreva um pequeno resumo do que o livro trabalha..."
+            className="
+              w-full
+              border border-gray-300
+              rounded-xl
+              p-3
+              outline-none
+              resize-y
+              focus:ring-2
+              focus:ring-blue-500
+              focus:border-blue-500
+            "
+          />
+
+          <p className="text-xs text-gray-500 mt-1">
+            Exemplo: trabalha amizade, respeito,
+            sentimentos e convivência.
+          </p>
+
+        </div>
+      )}
 
       {/* LOCAL / QUANTIDADE */}
 
@@ -484,7 +521,7 @@ export default function FormLivro(props: FormLivroProps) {
 
       </div>
 
-      {/* RESUMO */}
+      {/* RESUMO DO CADASTRO */}
 
       <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
 
@@ -540,6 +577,17 @@ export default function FormLivro(props: FormLivroProps) {
           </p>
 
         </div>
+
+        {props.tema && (
+          <div className="mt-3 pt-3 border-t border-blue-100">
+
+            <p className="text-sm text-gray-700">
+              💭 <strong>Tema / resumo:</strong>{" "}
+              {props.tema}
+            </p>
+
+          </div>
+        )}
 
       </div>
 
