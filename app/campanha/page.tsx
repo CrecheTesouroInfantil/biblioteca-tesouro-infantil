@@ -120,13 +120,18 @@ export default function CampanhaPage() {
   const [sucesso, setSucesso] = useState(false);
 
   async function carregarCriancas() {
+    const ordemTurmas: Record<string, number> = {
+      "Berçário": 1,
+      "Maternal I": 2,
+      "Maternal II": 3,
+      "Pré-escola": 4,
+    };
+
     const { data, error } = await supabase
       .from("criancas_publicas")
       .select(
         "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, status"
-      )
-      .order("turma", { ascending: true })
-      .order("nome", { ascending: true });
+      );
 
     if (error) {
       console.error(error);
@@ -134,7 +139,18 @@ export default function CampanhaPage() {
       return;
     }
 
-    setCriancas(data || []);
+    const ordenadas = [...(data || [])].sort((a, b) => {
+      const ordemA = ordemTurmas[a.turma] ?? 99;
+      const ordemB = ordemTurmas[b.turma] ?? 99;
+
+      if (ordemA !== ordemB) {
+        return ordemA - ordemB;
+      }
+
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+
+    setCriancas(ordenadas);
   }
 
   async function carregarEstatisticas() {
@@ -316,53 +332,76 @@ export default function CampanhaPage() {
       </header>
 
       {/* =========================
-          HERO
+          HERO COMPACTO
       ========================== */}
 
-      <section className="relative px-4 pt-5 sm:px-6">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[36px] bg-gradient-to-br from-[#62D8FF] via-[#6EB5FF] to-[#9B7AFF] shadow-xl">
-          <div className="relative px-5 py-10 sm:px-10 sm:py-14 lg:px-16">
-            {/* elementos decorativos */}
-            <span className="absolute left-5 top-8 text-4xl">⭐</span>
-            <span className="absolute right-8 top-10 text-4xl">💗</span>
-            <span className="absolute bottom-8 left-12 text-3xl">🎈</span>
-            <span className="absolute bottom-10 right-16 text-4xl">🎁</span>
-            <span className="absolute left-[48%] top-5 text-2xl">✨</span>
+      <section className="relative px-4 pt-4 sm:px-6">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-[30px] bg-gradient-to-br from-[#62D8FF] via-[#6EB5FF] to-[#9B7AFF] shadow-xl">
+          <div className="relative px-4 py-6 sm:px-8 sm:py-8 lg:px-12">
+            <span className="absolute left-4 top-5 text-3xl sm:text-4xl">
+              ⭐
+            </span>
+
+            <span className="absolute right-5 top-6 text-3xl sm:text-4xl">
+              💗
+            </span>
+
+            <span className="absolute bottom-5 left-8 text-2xl sm:text-3xl">
+              🎈
+            </span>
+
+            <span className="absolute bottom-5 right-10 text-3xl sm:text-4xl">
+              🎁
+            </span>
+
+            <span className="absolute left-[48%] top-3 text-xl">
+              ✨
+            </span>
 
             <div className="relative mx-auto max-w-5xl text-center">
-              <div className="inline-flex rounded-full bg-[#FFD52E] px-5 py-2 text-xs font-black uppercase tracking-wide text-[#123A78] shadow-md">
+              <div className="inline-flex rounded-full bg-[#FFD52E] px-4 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#123A78] shadow-md sm:px-5 sm:py-2 sm:text-xs">
                 🎈 Semana das Crianças 2026
               </div>
 
-              <h2 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-md sm:text-7xl lg:text-8xl">
-                Adote uma
-                <br />
-                <span className="text-[#FF2F7D]">CRIANÇA</span>
+              <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-tight text-white drop-shadow-md sm:text-6xl lg:text-7xl">
+                Adote uma{" "}
+                <span className="text-[#FF2F7D]">
+                  CRIANÇA
+                </span>
               </h2>
 
-              <p className="mx-auto mt-6 max-w-2xl text-base font-bold leading-6 text-white sm:text-xl">
+              <p className="mx-auto mt-3 max-w-2xl text-sm font-bold leading-5 text-white sm:text-lg">
                 Um pequeno gesto pode transformar o Dia das Crianças em uma
                 grande lembrança! 💗
               </p>
 
-              <div className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl bg-[#FFB8DB] p-4 shadow-md">
-                  <div className="text-3xl">🔎</div>
-                  <p className="mt-2 text-sm font-black text-[#123A78]">
+              <div className="mx-auto mt-5 grid max-w-3xl gap-2 sm:grid-cols-3">
+                <div className="rounded-2xl bg-[#FFB8DB] px-3 py-3 shadow-md sm:rounded-3xl sm:p-4">
+                  <div className="text-2xl sm:text-3xl">
+                    🔎
+                  </div>
+
+                  <p className="mt-1 text-xs font-black text-[#123A78] sm:mt-2 sm:text-sm">
                     Escolha uma criança
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-[#FFE47A] p-4 shadow-md">
-                  <div className="text-3xl">❤️</div>
-                  <p className="mt-2 text-sm font-black text-[#123A78]">
+                <div className="rounded-2xl bg-[#FFE47A] px-3 py-3 shadow-md sm:rounded-3xl sm:p-4">
+                  <div className="text-2xl sm:text-3xl">
+                    ❤️
+                  </div>
+
+                  <p className="mt-1 text-xs font-black text-[#123A78] sm:mt-2 sm:text-sm">
                     Faça a adoção
                   </p>
                 </div>
 
-                <div className="rounded-3xl bg-[#BDEBFF] p-4 shadow-md">
-                  <div className="text-3xl">🎁</div>
-                  <p className="mt-2 text-sm font-black text-[#123A78]">
+                <div className="rounded-2xl bg-[#BDEBFF] px-3 py-3 shadow-md sm:rounded-3xl sm:p-4">
+                  <div className="text-2xl sm:text-3xl">
+                    🎁
+                  </div>
+
+                  <p className="mt-1 text-xs font-black text-[#123A78] sm:mt-2 sm:text-sm">
                     Entregue o presente
                   </p>
                 </div>
@@ -376,7 +415,7 @@ export default function CampanhaPage() {
           ORIENTAÇÕES RÁPIDAS
       ========================== */}
 
-      <section className="px-5 pt-5">
+      <section className="px-5 pt-4">
         <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-3">
           <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#BDEBFF]">
             <div className="flex items-center gap-3">
@@ -426,7 +465,7 @@ export default function CampanhaPage() {
                 </p>
 
                 <p className="text-sm font-black text-[#F15A3A]">
-                  01/10/2026
+                  07/10/2026
                 </p>
               </div>
             </div>
@@ -438,10 +477,12 @@ export default function CampanhaPage() {
           CONTADORES
       ========================== */}
 
-      <section className="px-5 pt-7">
+      <section className="px-5 pt-5">
         <div className="mx-auto grid max-w-7xl overflow-hidden rounded-[32px] bg-white shadow-lg ring-1 ring-gray-100 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="p-6 text-center">
-            <div className="text-3xl">👧👦</div>
+          <div className="p-5 text-center">
+            <div className="text-3xl">
+              👧👦
+            </div>
 
             <p className="mt-2 text-3xl font-black text-[#168BE8]">
               {estatisticas.total}
@@ -453,7 +494,9 @@ export default function CampanhaPage() {
           </div>
 
           <div className="border-t border-gray-100 p-6 text-center sm:border-l lg:border-t-0">
-            <div className="text-3xl">💗</div>
+            <div className="text-3xl">
+              💗
+            </div>
 
             <p className="mt-2 text-3xl font-black text-[#F02B78]">
               {estatisticas.adotadas}
@@ -465,7 +508,9 @@ export default function CampanhaPage() {
           </div>
 
           <div className="border-t border-gray-100 p-6 text-center lg:border-l lg:border-t-0">
-            <div className="text-3xl">🎁</div>
+            <div className="text-3xl">
+              🎁
+            </div>
 
             <p className="mt-2 text-3xl font-black text-[#F39A12]">
               {estatisticas.disponiveis}
@@ -477,7 +522,9 @@ export default function CampanhaPage() {
           </div>
 
           <div className="border-t border-gray-100 p-6 text-center sm:border-l lg:border-t-0">
-            <div className="text-3xl">📦</div>
+            <div className="text-3xl">
+              📦
+            </div>
 
             <p className="mt-2 text-3xl font-black text-[#16A66A]">
               {estatisticas.presentes_recebidos}
@@ -494,7 +541,7 @@ export default function CampanhaPage() {
           COMO PARTICIPAR
       ========================== */}
 
-      <section className="px-5 pt-10">
+      <section className="px-5 pt-7">
         <div className="mx-auto max-w-7xl">
           <div className="text-center">
             <p className="text-sm font-black uppercase tracking-widest text-[#F02B78]">
@@ -506,8 +553,8 @@ export default function CampanhaPage() {
             </h3>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[30px] bg-[#FFE0EF] p-6 text-center shadow-sm">
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[26px] bg-[#FFE0EF] p-5 text-center shadow-sm">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
                 01
               </div>
@@ -521,7 +568,7 @@ export default function CampanhaPage() {
               </p>
             </div>
 
-            <div className="rounded-[30px] bg-[#FFF1BD] p-6 text-center shadow-sm">
+            <div className="rounded-[26px] bg-[#FFF1BD] p-5 text-center shadow-sm">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
                 02
               </div>
@@ -535,7 +582,7 @@ export default function CampanhaPage() {
               </p>
             </div>
 
-            <div className="rounded-[30px] bg-[#DDF3FF] p-6 text-center shadow-sm">
+            <div className="rounded-[26px] bg-[#DDF3FF] p-5 text-center shadow-sm">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white text-2xl shadow-sm">
                 03
               </div>
@@ -545,7 +592,7 @@ export default function CampanhaPage() {
               </h4>
 
               <p className="mt-2 text-sm leading-6 text-gray-600">
-                Entregue o presente até 01/10/2026 para organizarmos tudo com
+                Entregue o presente até 07/10/2026 para organizarmos tudo com
                 carinho.
               </p>
             </div>
@@ -557,7 +604,7 @@ export default function CampanhaPage() {
           LISTA DE CRIANÇAS
       ========================== */}
 
-      <section id="criancas" className="relative px-5 py-12">
+      <section id="criancas" className="relative px-5 py-9">
         <div className="mx-auto max-w-7xl">
           <div className="relative text-center">
             <span className="absolute left-0 top-0 hidden text-4xl sm:block">
@@ -583,7 +630,7 @@ export default function CampanhaPage() {
 
           {/* FILTROS */}
 
-          <div className="mt-7 flex flex-wrap justify-center gap-2">
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
             {filtros.map((item) => (
               <button
                 key={item}
@@ -675,7 +722,9 @@ export default function CampanhaPage() {
 
           {!carregando && criancasFiltradas.length === 0 && (
             <div className="mt-8 rounded-[30px] bg-white p-12 text-center shadow-sm">
-              <div className="text-5xl">💙</div>
+              <div className="text-5xl">
+                💙
+              </div>
 
               <p className="mt-4 text-lg font-black text-[#123A78]">
                 Essa turma já está toda escolhida!
@@ -695,7 +744,9 @@ export default function CampanhaPage() {
 
       <footer className="relative overflow-hidden bg-[#123A78] px-5 py-10 text-white">
         <div className="mx-auto max-w-7xl text-center">
-          <div className="text-4xl">💙 💗 💛</div>
+          <div className="text-4xl">
+            💙 💗 💛
+          </div>
 
           <h3 className="mt-4 text-2xl font-black">
             Juntos por infâncias mais felizes!
@@ -755,7 +806,9 @@ export default function CampanhaPage() {
                 </div>
 
                 <div className="mt-6 rounded-3xl bg-[#FFF1BD] p-5 text-center">
-                  <div className="text-4xl">🎁</div>
+                  <div className="text-4xl">
+                    🎁
+                  </div>
 
                   <p className="mt-2 text-sm font-bold leading-6 text-[#123A78]">
                     Que lindo! Você está escolhendo fazer parte da história de{" "}
@@ -849,7 +902,7 @@ export default function CampanhaPage() {
 
                   <p className="mt-2 text-sm leading-6 text-gray-600">
                     Entregue o brinquedo até{" "}
-                    <strong>01/10/2026</strong>, para que nossa equipe possa
+                    <strong>07/10/2026</strong>, para que nossa equipe possa
                     organizar tudo antes da Semana das Crianças.
                   </p>
                 </div>
