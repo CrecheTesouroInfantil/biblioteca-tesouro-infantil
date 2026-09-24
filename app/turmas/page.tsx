@@ -264,7 +264,7 @@ export default function TurmasPage() {
 
     setTurmas((resultadoTurmas.data || []) as Turma[]);
     setAlunos((resultadoAlunos.data || []) as Aluno[]);
-    setMatriculas((resultadoMatriculas.data || []) as Matricula[]);
+    setMatriculas((resultadoMatriculas.data || []) as unknown as Matricula[]);
     setMonitoras((resultadoMonitoras.data || []) as Monitora[]);
     setTurmaMonitoras(
       (resultadoTurmaMonitoras.data || []) as TurmaMonitora[]
@@ -690,7 +690,7 @@ export default function TurmasPage() {
 
     setMatriculas((anteriores) => [
       ...anteriores,
-      data as Matricula,
+      data as unknown as Matricula,
     ]);
 
     setAlunoParaAdicionar("");
