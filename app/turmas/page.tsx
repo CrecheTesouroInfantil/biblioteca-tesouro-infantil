@@ -262,12 +262,12 @@ export default function TurmasPage() {
       );
     }
 
-    setTurmas((resultadoTurmas.data || []) as Turma[]);
-    setAlunos((resultadoAlunos.data || []) as Aluno[]);
+    setTurmas((resultadoTurmas.data || []) as unknown as Turma[]);
+    setAlunos((resultadoAlunos.data || []) as unknown as Aluno[]);
     setMatriculas((resultadoMatriculas.data || []) as unknown as Matricula[]);
-    setMonitoras((resultadoMonitoras.data || []) as Monitora[]);
+    setMonitoras((resultadoMonitoras.data || []) as unknown as Monitora[]);
     setTurmaMonitoras(
-      (resultadoTurmaMonitoras.data || []) as TurmaMonitora[]
+      (resultadoTurmaMonitoras.data || []) as unknown as TurmaMonitora[]
     );
 
     setCarregando(false);
@@ -286,7 +286,7 @@ export default function TurmasPage() {
       return;
     }
 
-    const listaExistente = (existentes || []) as Turma[];
+    const listaExistente = (existentes || []) as unknown as Turma[];
 
     for (const definicao of definicoesTurmas) {
       const encontrada = listaExistente.find(
@@ -529,7 +529,7 @@ export default function TurmasPage() {
 
     setTurmaMonitoras((anteriores) => [
       ...anteriores,
-      data as TurmaMonitora,
+      data as unknown as TurmaMonitora,
     ]);
 
     setMensagem("✅ Monitora adicionada à turma.");
@@ -568,14 +568,14 @@ export default function TurmasPage() {
     }
 
     setMonitoras((anteriores) =>
-      [...anteriores, novaMonitora as Monitora].sort((a, b) =>
+      [...anteriores, novaMonitora as unknown as Monitora].sort((a, b) =>
         a.nome.localeCompare(b.nome)
       )
     );
 
     setSalvando(false);
 
-    const monitoraId = (novaMonitora as Monitora).id;
+    const monitoraId = (novaMonitora as unknown as Monitora).id;
 
     await adicionarMonitoraExistente(monitoraId);
 
