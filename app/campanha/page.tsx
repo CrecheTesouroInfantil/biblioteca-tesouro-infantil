@@ -10,6 +10,7 @@ type Crianca = {
   genero: string;
   turma: string;
   cartinha_ou_desenho: string | null;
+  cartinha_url: string | null;
   status: string;
 };
 
@@ -118,6 +119,7 @@ export default function CampanhaPage() {
 
   const [adotando, setAdotando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+  const [cartinhaAberta, setCartinhaAberta] = useState<Crianca | null>(null);
 
   async function carregarCriancas() {
     const ordemTurmas: Record<string, number> = {
@@ -130,7 +132,7 @@ export default function CampanhaPage() {
     const { data, error } = await supabase
       .from("criancas_publicas")
       .select(
-        "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, status"
+        "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, cartinha_url, status"
       );
 
     if (error) {
@@ -249,7 +251,7 @@ export default function CampanhaPage() {
       console.error(error);
 
       alert(
-        "Não foi possível concluir a adoção. Essa criança pode já ter sido adotada."
+        "Não foi possível concluir a escolha. Essa criança pode já ter sido escolhida por outra pessoa."
       );
 
       setAdotando(false);
@@ -258,7 +260,7 @@ export default function CampanhaPage() {
 
     if (data === false) {
       alert(
-        "Essa criança acabou de ser adotada por outra pessoa. Escolha outra criança."
+        "Essa criança acabou de ser escolhida por outra pessoa. Escolha outra criança."
       );
 
       setAdotando(false);
@@ -312,7 +314,7 @@ export default function CampanhaPage() {
               </h1>
 
               <p className="text-xs font-medium text-gray-500">
-                Em parceria com a FENORTE
+                Em parceria com a FENORD
               </p>
             </div>
           </div>
@@ -349,7 +351,7 @@ export default function CampanhaPage() {
               </div>
 
               <h2 className="mt-3 text-4xl font-black leading-[0.95] tracking-tight text-white drop-shadow-md sm:text-6xl lg:text-7xl">
-                Adote uma
+                Escolha e presenteie uma
                 <br />
                 <span className="text-[#FF2F7D]">CRIANÇA</span>
               </h2>
@@ -370,7 +372,7 @@ export default function CampanhaPage() {
                 <div className="rounded-2xl bg-[#FFE47A] px-3 py-2.5 shadow-md sm:rounded-3xl sm:p-3">
                   <div className="text-2xl sm:text-3xl">❤️</div>
                   <p className="mt-1 text-xs font-black text-[#123A78] sm:mt-2 sm:text-sm">
-                    Faça a adoção
+                    Escolha e presenteie
                   </p>
                 </div>
 
@@ -440,7 +442,7 @@ export default function CampanhaPage() {
                 </p>
 
                 <p className="text-sm font-black text-[#F15A3A]">
-                  07/10/2026
+                  20/10/2026
                 </p>
               </div>
             </div>
@@ -474,7 +476,7 @@ export default function CampanhaPage() {
             </p>
 
             <p className="text-sm font-bold text-gray-500">
-              Crianças adotadas
+              Crianças escolhidas
             </p>
           </div>
 
@@ -486,7 +488,7 @@ export default function CampanhaPage() {
             </p>
 
             <p className="text-sm font-bold text-gray-500">
-              Aguardando adoção
+              Aguardando presente
             </p>
           </div>
 
@@ -541,7 +543,7 @@ export default function CampanhaPage() {
               </div>
 
               <h4 className="mt-4 text-xl font-black text-[#123A78]">
-                Adote
+                Escolha e presenteie
               </h4>
 
               <p className="mt-2 text-sm leading-6 text-gray-600">
@@ -559,7 +561,7 @@ export default function CampanhaPage() {
               </h4>
 
               <p className="mt-2 text-sm leading-6 text-gray-600">
-                Entregue o presente até 07/10/2026 para organizarmos tudo com
+                Entregue o presente até 20/10/2026 para organizarmos tudo com
                 carinho.
               </p>
             </div>
@@ -666,11 +668,25 @@ export default function CampanhaPage() {
                       {crianca.turma}
                     </p>
 
-                    {crianca.cartinha_ou_desenho && (
-                      <div className="mt-4 rounded-2xl bg-white/70 p-3 text-xs leading-5 text-gray-600">
-                        💌{" "}
-                        <strong>Cartinha/desenho:</strong>{" "}
-                        {crianca.cartinha_ou_desenho}
+                    {(crianca.cartinha_ou_desenho || crianca.cartinha_url) && (
+                      <div className="mt-4 space-y-2">
+                        {crianca.cartinha_ou_desenho && (
+                          <div className="rounded-2xl bg-white/70 p-3 text-xs leading-5 text-gray-600">
+                            💌{" "}
+                            <strong>Cartinha/desenho:</strong>{" "}
+                            {crianca.cartinha_ou_desenho}
+                          </div>
+                        )}
+
+                        {crianca.cartinha_url && (
+                          <button
+                            type="button"
+                            onClick={() => setCartinhaAberta(crianca)}
+                            className="w-full rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#F02B78] shadow-sm ring-1 ring-[#FFD2E6] transition hover:bg-[#FFF5FA]"
+                          >
+                            💌 Ver cartinha ou desenho
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -679,7 +695,7 @@ export default function CampanhaPage() {
                       onClick={() => abrirAdocao(crianca)}
                       className={`mt-5 w-full rounded-2xl px-4 py-3.5 text-sm font-black text-white shadow-sm transition ${cor.botao}`}
                     >
-                      🎁 Adotar esta criança
+                      🎁 Escolher e presentear esta criança
                     </button>
                   </article>
                 );
@@ -726,11 +742,69 @@ export default function CampanhaPage() {
             </p>
 
             <p className="mt-1 text-xs text-white/60">
-              Em parceria com a FENORTE
+              Em parceria com a FENORD
             </p>
           </div>
         </div>
       </footer>
+
+      {/* =========================
+          MODAL DA CARTINHA / DESENHO
+      ========================== */}
+
+      {cartinhaAberta?.cartinha_url && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-[#123A78]/75 p-4 backdrop-blur-sm"
+          onClick={() => setCartinhaAberta(null)}
+        >
+          <div
+            className="relative max-h-[94vh] w-full max-w-3xl overflow-hidden rounded-[30px] bg-white p-4 shadow-2xl sm:p-6"
+            onClick={(evento) => evento.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 pb-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-[#F02B78]">
+                  💌 Cartinha ou desenho
+                </p>
+
+                <h3 className="mt-1 text-2xl font-black text-[#123A78]">
+                  {cartinhaAberta.nome}
+                </h3>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  {cartinhaAberta.turma} •{" "}
+                  {calcularIdade(cartinhaAberta.data_nascimento)}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCartinhaAberta(null)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                aria-label="Fechar cartinha"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="max-h-[76vh] overflow-auto rounded-2xl bg-[#F8FCFF] p-2 text-center">
+              <img
+                src={cartinhaAberta.cartinha_url}
+                alt={`Cartinha ou desenho de ${cartinhaAberta.nome}`}
+                className="mx-auto max-h-[72vh] w-auto max-w-full rounded-xl object-contain"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setCartinhaAberta(null)}
+              className="mt-4 w-full rounded-2xl bg-[#168BE8] px-5 py-3.5 text-sm font-black text-white shadow-sm hover:bg-[#0D75C8]"
+            >
+              Voltar para a criança
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* =========================
           MODAL DE ADOÇÃO
@@ -837,7 +911,7 @@ export default function CampanhaPage() {
                 </div>
 
                 <h3 className="mt-6 text-3xl font-black text-[#123A78]">
-                  Adoção confirmada!
+                  Escolha confirmada!
                 </h3>
 
                 <p className="mt-3 text-sm leading-6 text-gray-500">
@@ -849,7 +923,7 @@ export default function CampanhaPage() {
                 </p>
 
                 <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Você adotou{" "}
+                  Você escolheu presentear{" "}
                   <strong className="text-[#123A78]">
                     {criancaSelecionada.nome}
                   </strong>
@@ -863,7 +937,7 @@ export default function CampanhaPage() {
 
                   <p className="mt-2 text-sm leading-6 text-gray-600">
                     Entregue o brinquedo até{" "}
-                    <strong>07/10/2026</strong>, para que nossa equipe possa
+                    <strong>20/10/2026</strong>, para que nossa equipe possa
                     organizar tudo antes da Semana das Crianças.
                   </p>
                 </div>

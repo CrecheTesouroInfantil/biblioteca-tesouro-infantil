@@ -1,4 +1,4 @@
-"use client";
+
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -115,6 +115,12 @@ export default function Sidebar() {
 
   const emailUsuario =
     usuario?.email || "Usuário administrativo";
+
+  // A campanha pública não usa o menu interno do sistema.
+  // Quem entra pelo QR Code vê somente a página da campanha.
+  if (pathname.startsWith("/campanha")) {
+    return null;
+  }
 
   return (
     <>

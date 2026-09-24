@@ -82,12 +82,9 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
-
       <div className="w-full max-w-md">
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
-
-          {/* CABEÇALHO */}
 
           <div className="flex flex-col items-center text-center mb-8">
 
@@ -107,14 +104,10 @@ export default function LoginPage() {
 
           </div>
 
-          {/* FORMULÁRIO */}
-
           <form
             onSubmit={entrar}
             className="space-y-5"
           >
-
-            {/* E-MAIL */}
 
             <div>
 
@@ -144,8 +137,6 @@ export default function LoginPage() {
               />
 
             </div>
-
-            {/* SENHA */}
 
             <div>
 
@@ -211,8 +202,6 @@ export default function LoginPage() {
 
             </div>
 
-            {/* RECUPERAR SENHA */}
-
             <div className="flex justify-end">
 
               <button
@@ -235,27 +224,17 @@ export default function LoginPage() {
 
             </div>
 
-            {/* ERRO */}
-
             {erro && (
-
               <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm font-semibold">
                 ❌ {erro}
               </div>
-
             )}
 
-            {/* SUCESSO */}
-
             {sucesso && (
-
               <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm font-semibold">
                 ✅ {sucesso}
               </div>
-
             )}
-
-            {/* ENTRAR */}
 
             <button
               type="submit"
@@ -287,7 +266,6 @@ export default function LoginPage() {
         </p>
 
       </div>
-
     </main>
   );
 }

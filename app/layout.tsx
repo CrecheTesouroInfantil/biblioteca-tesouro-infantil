@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import LayoutShell from "@/components/LayoutShell";
+import RootLayoutShell from "@/components/RootLayoutShell";
 
 export const metadata: Metadata = {
   title: "Biblioteca Tesouro Infantil",
@@ -15,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="overflow-x-hidden">
-        <LayoutShell>
+        <RootLayoutShell>
           {children}
-        </LayoutShell>
+        </RootLayoutShell>
       </body>
     </html>
   );
