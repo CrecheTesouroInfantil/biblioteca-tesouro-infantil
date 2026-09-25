@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 type Crianca = {
@@ -12,6 +13,9 @@ type Crianca = {
   cartinha_ou_desenho: string | null;
   cartinha_url: string | null;
   status: string;
+  adotante_nome: string | null;
+  adotante_email: string | null;
+  data_adocao: string | null;
 };
 
 const filtros = [
@@ -59,11 +63,14 @@ function emojiTurma(turma: string) {
 }
 
 export default function AdminCampanhaPage() {
+  const router = useRouter();
+
   const [criancas, setCriancas] = useState<Crianca[]>([]);
   const [filtro, setFiltro] = useState("Todas");
-  const [busca, setBusca] = useState("");
 
   const [carregando, setCarregando] = useState(true);
+  const [verificandoSessao, setVerificandoSessao] = useState(true);
+  const [usuarioLogado, setUsuarioLogado] = useState<string | null>(null);
   const [erro, setErro] = useState("");
 
   const [enviandoId, setEnviandoId] = useState<number | null>(null);
@@ -78,29 +85,6 @@ export default function AdminCampanhaPage() {
   const [criancaParaUpload, setCriancaParaUpload] = useState<Crianca | null>(null);
   const [modoCamera, setModoCamera] = useState(false);
 
-  const [editandoCrianca, setEditandoCrianca] = useState<Crianca | null>(null);
-  const [formulario, setFormulario] = useState({
-    nome: "",
-    data_nascimento: "",
-    genero: "",
-    turma: "",
-    cartinha_ou_desenho: "",
-    status: "disponivel",
-  });
-  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
-  const [excluindoId, setExcluindoId] = useState<number | null>(null);
-
-  const [adicionandoCrianca, setAdicionandoCrianca] = useState(false);
-  const [salvandoNovaCrianca, setSalvandoNovaCrianca] = useState(false);
-  const [novoFormulario, setNovoFormulario] = useState({
-    nome: "",
-    data_nascimento: "",
-    genero: "",
-    turma: "",
-    cartinha_ou_desenho: "",
-    status: "disponivel",
-  });
-
   async function carregarCriancas() {
     setCarregando(true);
     setErro("");
@@ -108,7 +92,7 @@ export default function AdminCampanhaPage() {
     const { data, error } = await supabase
       .from("criancas")
       .select(
-        "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, cartinha_url, status"
+        "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, cartinha_url, status, adotante_nome, adotante_email, data_adocao"
       )
       .order("turma", { ascending: true })
       .order("nome", { ascending: true });
@@ -127,232 +111,121 @@ export default function AdminCampanhaPage() {
   }
 
   useEffect(() => {
-    carregarCriancas();
-  }, []);
+    let ativo = true;
+
+    async function verificarSessao() {
+      setVerificandoSessao(true);
+
+      const { data, error } = await supabase.auth.getUser();
+
+      if (!ativo) return;
+
+      if (error || !data.user) {
+        setUsuarioLogado(null);
+        setVerificandoSessao(false);
+        router.replace("/login");
+        return;
+      }
+
+      setUsuarioLogado(data.user.id);
+      setVerificandoSessao(false);
+      await carregarCriancas();
+    }
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_evento, sessao) => {
+        if (!ativo) return;
+
+        if (!sessao?.user) {
+          setUsuarioLogado(null);
+          router.replace("/login");
+          return;
+        }
+
+        setUsuarioLogado(sessao.user.id);
+      }
+    );
+
+    verificarSessao();
+
+    return () => {
+      ativo = false;
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
 
   const criancasFiltradas = useMemo(() => {
     if (filtro === "Todas") {
-      return criancas;
+      return criancasDisponiveis;
     }
 
-    const termo = busca.trim().toLowerCase();
+    return criancasDisponiveis.filter((crianca) => crianca.turma === filtro);
+  }, [criancasDisponiveis, filtro]);
 
-    return criancas.filter((crianca) => {
-      const correspondeTurma =
-        filtro === "Todas" || crianca.turma === filtro;
-      const correspondeBusca =
-        !termo ||
-        crianca.nome.toLowerCase().includes(termo) ||
-        crianca.turma.toLowerCase().includes(termo);
+  const criancasDisponiveis = useMemo(() => {
+    return criancas.filter((crianca) => crianca.status !== "adotada");
+  }, [criancas]);
 
-      return correspondeTurma && correspondeBusca;
+  const criancasAdotadas = useMemo(() => {
+    return [...criancas]
+      .filter((crianca) => crianca.status === "adotada")
+      .sort((a, b) => {
+        const dataA = a.data_adocao
+          ? new Date(a.data_adocao).getTime()
+          : 0;
+        const dataB = b.data_adocao
+          ? new Date(b.data_adocao).getTime()
+          : 0;
+
+        return dataB - dataA;
+      });
+  }, [criancas]);
+
+  function formatarDataAdocao(data: string | null) {
+    if (!data) return "Data não informada";
+
+    const valor = new Date(data);
+
+    if (Number.isNaN(valor.getTime())) {
+      return "Data não informada";
+    }
+
+    return valor.toLocaleString("pt-BR", {
+      dateStyle: "short",
+      timeStyle: "short",
     });
-  }, [criancas, filtro, busca]);
-
-  function abrirEdicao(crianca: Crianca) {
-    setEditandoCrianca(crianca);
-    setFormulario({
-      nome: crianca.nome,
-      data_nascimento: crianca.data_nascimento,
-      genero: crianca.genero,
-      turma: crianca.turma,
-      cartinha_ou_desenho: crianca.cartinha_ou_desenho || "",
-      status: crianca.status || "disponivel",
-    });
-    setMensagem("");
   }
 
-  async function salvarEdicao() {
-    if (!editandoCrianca) return;
-
-    if (!formulario.nome.trim()) {
-      setMensagem("Informe o nome da criança.");
-      return;
-    }
-
-    try {
-      setSalvandoEdicao(true);
-      setMensagem("");
-
-      const { data, error } = await supabase
-        .from("criancas")
-        .update({
-          nome: formulario.nome.trim(),
-          data_nascimento: formulario.data_nascimento,
-          genero: formulario.genero,
-          turma: formulario.turma,
-          cartinha_ou_desenho: formulario.cartinha_ou_desenho.trim() || null,
-          status: formulario.status,
-        })
-        .eq("id", editandoCrianca.id)
-        .select(
-          "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, cartinha_url, status"
-        )
-        .single();
-
-      if (error) {
-        console.error(error);
-        throw new Error(
-          "Não foi possível salvar as alterações. Verifique as permissões do administrador."
-        );
-      }
-
-      setCriancas((atual) =>
-        atual.map((item) =>
-          item.id === editandoCrianca.id ? (data as Crianca) : item
-        )
-      );
-      setEditandoCrianca(null);
-      setMensagem(`Dados de ${data.nome} atualizados com sucesso! ✅`);
-    } catch (error) {
-      console.error(error);
-      setMensagem(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível salvar as alterações."
-      );
-    } finally {
-      setSalvandoEdicao(false);
-    }
-  }
-
-  function abrirNovaCrianca() {
-    setNovoFormulario({
-      nome: "",
-      data_nascimento: "",
-      genero: "",
-      turma: "",
-      cartinha_ou_desenho: "",
-      status: "disponivel",
-    });
-    setMensagem("");
-    setAdicionandoCrianca(true);
-  }
-
-  async function salvarNovaCrianca() {
-    if (!novoFormulario.nome.trim()) {
-      setMensagem("Informe o nome da criança.");
-      return;
-    }
-
-    if (!novoFormulario.data_nascimento) {
-      setMensagem("Informe a data de nascimento.");
-      return;
-    }
-
-    if (!novoFormulario.genero) {
-      setMensagem("Selecione o gênero.");
-      return;
-    }
-
-    if (!novoFormulario.turma) {
-      setMensagem("Selecione a turma.");
-      return;
-    }
-
-    try {
-      setSalvandoNovaCrianca(true);
-      setMensagem("");
-
-      const { data, error } = await supabase
-        .from("criancas")
-        .insert({
-          nome: novoFormulario.nome.trim(),
-          data_nascimento: novoFormulario.data_nascimento,
-          genero: novoFormulario.genero,
-          turma: novoFormulario.turma,
-          cartinha_ou_desenho: novoFormulario.cartinha_ou_desenho.trim() || null,
-          status: novoFormulario.status,
-          presente_recebido: false,
-        })
-        .select(
-          "id, nome, data_nascimento, genero, turma, cartinha_ou_desenho, cartinha_url, status"
-        )
-        .single();
-
-      if (error) {
-        console.error(error);
-        throw new Error(
-          "Não foi possível cadastrar a criança. Verifique a permissão de inclusão no Supabase."
-        );
-      }
-
-      setCriancas((atual) => [...atual, data as Crianca]);
-      setAdicionandoCrianca(false);
-      setMensagem(`${data.nome} foi cadastrada com sucesso! 👧💗`);
-    } catch (error) {
-      console.error(error);
-      setMensagem(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível cadastrar a criança."
-      );
-    } finally {
-      setSalvandoNovaCrianca(false);
-    }
-  }
-
-  async function excluirCrianca(crianca: Crianca) {
-    const confirmou = window.confirm(
-      `Tem certeza que deseja excluir ${crianca.nome}?\n\nEssa ação removerá o cadastro da campanha.`
-    );
-
-    if (!confirmou) return;
-
-    try {
-      setExcluindoId(crianca.id);
-      setMensagem("");
-
-      const { error } = await supabase
-        .from("criancas")
-        .delete()
-        .eq("id", crianca.id);
-
-      if (error) {
-        console.error(error);
-        throw new Error(
-          "Não foi possível excluir a criança. Verifique a permissão de exclusão no Supabase."
-        );
-      }
-
-      if (crianca.cartinha_url) {
-        try {
-          const parte = crianca.cartinha_url.split("/cartinhas/")[1];
-          const caminho = parte ? decodeURIComponent(parte.split("?")[0]) : null;
-
-          if (caminho) {
-            await supabase.storage.from("cartinhas").remove([caminho]);
-          }
-        } catch (storageError) {
-          console.warn("Não foi possível remover a cartinha da Storage:", storageError);
-        }
-      }
-
-      setCriancas((atual) =>
-        atual.filter((item) => item.id !== crianca.id)
-      );
-      setMensagem(`${crianca.nome} foi excluída da campanha. 🗑️`);
-    } catch (error) {
-      console.error(error);
-      setMensagem(
-        error instanceof Error
-          ? error.message
-          : "Não foi possível excluir a criança."
-      );
-    } finally {
-      setExcluindoId(null);
-    }
+  async function atualizarPainel() {
+    await carregarCriancas();
+    setMensagem("🔄 Painel atualizado com os dados mais recentes.");
   }
 
   async function adicionarCartinha(
     crianca: Crianca,
     evento: ChangeEvent<HTMLInputElement>
   ) {
+    console.log("================================");
+    console.log("📸 INÍCIO DO PROCESSO");
+    console.log("Criança:", crianca.nome);
+    console.log("ID:", crianca.id);
+
     const arquivo = evento.target.files?.[0];
 
-    if (!arquivo) return;
+    console.log("📁 Arquivo recebido:", arquivo);
 
-    setMensagem("");
+    if (!arquivo) {
+      console.log("❌ Nenhum arquivo foi selecionado.");
+      setMensagem("❌ Nenhuma imagem foi selecionada.");
+      return;
+    }
+
+    console.log("✅ Arquivo recebido com sucesso.");
+    console.log("Nome:", arquivo.name);
+    console.log("Tipo:", arquivo.type);
+    console.log("Tamanho:", arquivo.size);
+
+    setMensagem("1️⃣ Imagem recebida. Verificando arquivo...");
 
     const tiposPermitidos = [
       "image/jpeg",
@@ -361,84 +234,131 @@ export default function AdminCampanhaPage() {
     ];
 
     if (!tiposPermitidos.includes(arquivo.type)) {
-      setMensagem(
-        "Escolha uma imagem JPG, PNG ou WEBP."
-      );
+      console.log("❌ Tipo de arquivo não permitido:", arquivo.type);
+      setMensagem("❌ Escolha uma imagem JPG, PNG ou WEBP.");
       evento.target.value = "";
       return;
     }
+
+    console.log("✅ Tipo de imagem permitido.");
 
     const tamanhoMaximo = 5 * 1024 * 1024;
 
     if (arquivo.size > tamanhoMaximo) {
-      setMensagem(
-        "A imagem deve ter no máximo 5 MB."
-      );
+      console.log("❌ Imagem maior que 5 MB.");
+      setMensagem("❌ A imagem deve ter no máximo 5 MB.");
       evento.target.value = "";
       return;
     }
 
+    console.log("✅ Tamanho da imagem permitido.");
+
     try {
       setEnviandoId(crianca.id);
+
+      /*
+       * Confirma que a sessão do Supabase ainda existe antes do upload.
+       * O Storage usa essa sessão para aplicar a policy TO authenticated.
+       */
+      const { data: sessaoData, error: sessaoError } =
+        await supabase.auth.getSession();
+
+      if (sessaoError || !sessaoData.session?.user) {
+        console.error("❌ SESSÃO AUSENTE:", sessaoError);
+        setMensagem(
+          "❌ Sua sessão expirou. Faça login novamente para enviar a cartinha."
+        );
+        router.replace("/login");
+        return;
+      }
+
+      setUsuarioLogado(sessaoData.session.user.id);
+
+      setMensagem("2️⃣ Sessão confirmada. Preparando a imagem para envio...");
 
       const extensao =
         arquivo.name.split(".").pop()?.toLowerCase() || "jpg";
 
       const caminho = `${crianca.id}.${extensao}`;
 
-      /*
-       * Envia a imagem para o bucket cartinhas
-       */
-      const { error: uploadError } = await supabase.storage
-        .from("cartinhas")
-        .upload(caminho, arquivo, {
-          cacheControl: "3600",
-          upsert: true,
-          contentType: arquivo.type,
-        });
+      console.log("📂 Bucket:", "cartinhas");
+      console.log("📄 Caminho:", caminho);
+
+      setMensagem("3️⃣ Enviando imagem para o armazenamento...");
+      console.log("📤 Tentando enviar imagem para o Storage...");
+
+      const { data: uploadData, error: uploadError } =
+        await supabase.storage
+          .from("cartinhas")
+          .upload(caminho, arquivo, {
+            cacheControl: "3600",
+            upsert: true,
+            contentType: arquivo.type,
+          });
+
+      console.log("📦 Resultado do Storage:", {
+        uploadData,
+        uploadError,
+      });
 
       if (uploadError) {
-        console.error(uploadError);
-        throw new Error(
-          "Não foi possível enviar a imagem para o armazenamento."
-        );
+        console.error("❌ ERRO NO STORAGE:", uploadError);
+        setMensagem(`❌ ERRO NO STORAGE: ${uploadError.message}`);
+        return;
       }
 
-      /*
-       * Obtém o endereço público da imagem
-       */
+      console.log("✅ IMAGEM ENVIADA PARA O STORAGE!");
+
+      setMensagem("4️⃣ Imagem enviada. Obtendo endereço...");
+      console.log("🔗 Gerando URL pública...");
+
       const { data: publicUrlData } = supabase.storage
         .from("cartinhas")
         .getPublicUrl(caminho);
 
+      console.log("🔗 Resultado da URL:", publicUrlData);
+
       const url = publicUrlData.publicUrl;
 
+      console.log("🔗 URL gerada:", url);
+
       if (!url) {
-        throw new Error(
-          "Não foi possível obter o endereço da imagem."
+        console.error("❌ A URL pública não foi gerada.");
+        setMensagem(
+          "❌ A imagem foi enviada, mas não foi possível gerar a URL."
         );
+        return;
       }
 
-      /*
-       * Salva o endereço na criança
-       */
-      const { error: updateError } = await supabase
-        .from("criancas")
-        .update({
-          cartinha_url: url,
-        })
-        .eq("id", crianca.id);
+      console.log("✅ URL pública gerada com sucesso.");
+
+      setMensagem("5️⃣ Salvando a imagem no cadastro da criança...");
+      console.log("💾 Tentando salvar cartinha_url na tabela criancas...");
+      console.log("ID da criança:", crianca.id);
+      console.log("URL:", url);
+
+      const { data: updateData, error: updateError } =
+        await supabase
+          .from("criancas")
+          .update({
+            cartinha_url: url,
+          })
+          .eq("id", crianca.id)
+          .select();
+
+      console.log("📋 Resultado do UPDATE:", {
+        updateData,
+        updateError,
+      });
 
       if (updateError) {
-        console.error(updateError);
-        throw new Error(
-          "A imagem foi enviada, mas não foi possível salvar o endereço na criança."
-        );
+        console.error("❌ ERRO AO SALVAR NA TABELA:", updateError);
+        setMensagem(`❌ ERRO AO SALVAR NO BANCO: ${updateError.message}`);
+        return;
       }
 
-      /*
-       * Atualiza a tela imediatamente
-       */
+      console.log("✅ URL SALVA NA TABELA CRIANCAS!");
+
       setCriancas((atual) =>
         atual.map((item) =>
           item.id === crianca.id
@@ -450,21 +370,38 @@ export default function AdminCampanhaPage() {
         )
       );
 
+      console.log("🎉 CARTINHA CADASTRADA COM SUCESSO!");
+
       setMensagem(
-        `Cartinha de ${crianca.nome} adicionada com sucesso! 💌`
+        `🎉 Cartinha de ${crianca.nome} adicionada com sucesso!`
       );
     } catch (error) {
-      console.error(error);
+      console.error("🔥 ERRO INESPERADO:", error);
 
       setMensagem(
         error instanceof Error
-          ? error.message
-          : "Não foi possível adicionar a cartinha."
+          ? `❌ ERRO: ${error.message}`
+          : "❌ Ocorreu um erro inesperado."
       );
     } finally {
+      console.log("🏁 FIM DO PROCESSO");
       setEnviandoId(null);
       evento.target.value = "";
     }
+  }
+
+  if (verificandoSessao || !usuarioLogado) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F6FAFF] px-5 text-[#123A78]">
+        <div className="w-full max-w-md rounded-[30px] bg-white p-10 text-center shadow-sm ring-1 ring-gray-100">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#DDF3FF] border-t-[#168BE8]" />
+          <h1 className="mt-5 text-xl font-black">Verificando acesso...</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Esta área é exclusiva da administração.
+          </p>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -484,6 +421,9 @@ export default function AdminCampanhaPage() {
             <p className="mt-1 text-sm text-gray-500">
               Semana das Crianças 2026 • Adote uma Criança
             </p>
+            <p className="mt-1 text-xs font-bold text-[#16A66A]">
+              🔐 Acesso administrativo autenticado
+            </p>
           </div>
 
           <a
@@ -496,22 +436,6 @@ export default function AdminCampanhaPage() {
       </header>
 
       <div className="mx-auto max-w-7xl px-5 py-8">
-        <section className="mb-6 rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-gray-100">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-[#168BE8]">
-                Prazo da campanha
-              </p>
-              <h2 className="mt-1 text-xl font-black text-[#123A78]">
-                Entrega dos brinquedos até 20 de outubro de 2026 🎁
-              </h2>
-            </div>
-            <div className="rounded-2xl bg-[#FFF1BD] px-5 py-3 text-center">
-              <p className="text-sm font-black text-[#123A78]">20/10/2026</p>
-            </div>
-          </div>
-        </section>
-
         {/* EXPLICAÇÃO */}
         <section className="rounded-[30px] bg-gradient-to-br from-[#DDF3FF] to-[#F3E9FF] p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -537,30 +461,6 @@ export default function AdminCampanhaPage() {
               </p>
             </div>
           </div>
-        </section>
-
-        {/* PESQUISA E NOVA CRIANÇA */}
-        <section className="mt-7 flex flex-col gap-4 lg:flex-row lg:items-end">
-          <div className="flex-1 rounded-[24px] bg-white p-4 shadow-sm ring-1 ring-gray-100">
-            <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-              🔎 Pesquisar criança
-            </label>
-            <input
-              type="search"
-              value={busca}
-              onChange={(evento) => setBusca(evento.target.value)}
-              placeholder="Digite o nome da criança..."
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none transition focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={abrirNovaCrianca}
-            className="rounded-[24px] bg-[#16A66A] px-6 py-4 text-sm font-black text-white shadow-sm transition hover:bg-[#128B58] lg:mb-0"
-          >
-            ➕ Acrescentar criança
-          </button>
         </section>
 
         {/* FILTROS */}
@@ -594,6 +494,106 @@ export default function AdminCampanhaPage() {
           >
             {mensagem}
           </div>
+        )}
+
+        {/* RESUMO DAS ADOÇÕES */}
+        {!carregando && !erro && (
+          <section className="mt-8 rounded-[30px] bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-widest text-[#F02B78]">
+                  Controle das adoções
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black text-[#123A78]">
+                  🎁 Crianças adotadas
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Aqui aparecem as crianças que já foram escolhidas na campanha.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-[#FFF1F7] px-5 py-3 text-center">
+                  <p className="text-2xl font-black text-[#F02B78]">
+                    {criancasAdotadas.length}
+                  </p>
+                  <p className="text-xs font-bold text-gray-500">
+                    adotadas
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={atualizarPainel}
+                  disabled={carregando}
+                  className="rounded-2xl bg-[#168BE8] px-4 py-3 text-sm font-black text-white shadow-sm transition hover:bg-[#0D75C8] disabled:cursor-wait disabled:bg-gray-400"
+                >
+                  🔄 Atualizar
+                </button>
+              </div>
+            </div>
+
+            {criancasAdotadas.length === 0 ? (
+              <div className="mt-6 rounded-2xl bg-[#F8FCFF] p-8 text-center ring-1 ring-gray-100">
+                <div className="text-4xl">💙</div>
+                <p className="mt-3 text-sm font-bold text-gray-500">
+                  Nenhuma criança foi adotada ainda.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 overflow-x-auto rounded-2xl ring-1 ring-gray-100">
+                <table className="w-full min-w-[850px] border-collapse text-left">
+                  <thead>
+                    <tr className="bg-[#F6FAFF] text-xs font-black uppercase tracking-wide text-[#123A78]">
+                      <th className="px-4 py-4">Nome da criança</th>
+                      <th className="px-4 py-4">Status</th>
+                      <th className="px-4 py-4">Nome do adotante</th>
+                      <th className="px-4 py-4">E-mail</th>
+                      <th className="px-4 py-4">Data da adoção</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {criancasAdotadas.map((crianca) => (
+                      <tr
+                        key={crianca.id}
+                        className="border-t border-gray-100 text-sm"
+                      >
+                        <td className="px-4 py-4">
+                          <div className="font-black text-[#123A78]">
+                            {crianca.nome}
+                          </div>
+                          <div className="mt-1 text-xs text-gray-400">
+                            {crianca.turma}
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <span className="inline-flex rounded-full bg-[#DDF8D9] px-3 py-1.5 text-xs font-black text-[#168B57]">
+                            Adotada
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-4 font-bold text-gray-700">
+                          {crianca.adotante_nome || "Não informado"}
+                        </td>
+
+                        <td className="px-4 py-4 text-gray-600">
+                          {crianca.adotante_email || "Não informado"}
+                        </td>
+
+                        <td className="px-4 py-4 text-gray-600">
+                          {formatarDataAdocao(crianca.data_adocao)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         )}
 
         {/* CARREGANDO */}
@@ -709,30 +709,6 @@ export default function AdminCampanhaPage() {
                     </button>
                   </div>
 
-                  {/* GERENCIAR CADASTRO */}
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => abrirEdicao(crianca)}
-                      className="rounded-2xl bg-[#EAF7FF] px-3 py-3 text-sm font-black text-[#123A78] ring-1 ring-[#CDEBFF] transition hover:bg-[#DDF3FF]"
-                    >
-                      ✏️ Editar dados
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={excluindoId === crianca.id}
-                      onClick={() => excluirCrianca(crianca)}
-                      className={`rounded-2xl px-3 py-3 text-sm font-black transition ${
-                        excluindoId === crianca.id
-                          ? "cursor-wait bg-gray-100 text-gray-400"
-                          : "bg-red-50 text-red-600 ring-1 ring-red-200 hover:bg-red-100"
-                      }`}
-                    >
-                      {excluindoId === crianca.id ? "⏳ Excluindo..." : "🗑️ Excluir"}
-                    </button>
-                  </div>
-
                   {/* STATUS */}
                   {crianca.cartinha_url && (
                     <p className="mt-3 text-center text-xs font-bold text-[#16A66A]">
@@ -774,279 +750,6 @@ export default function AdminCampanhaPage() {
             </div>
           )}
       </div>
-
-      {/* MODAL DE NOVA CRIANÇA */}
-      {adicionandoCrianca && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-[#123A78]/70 p-4 backdrop-blur-sm"
-          onClick={() => !salvandoNovaCrianca && setAdicionandoCrianca(false)}
-        >
-          <div
-            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[30px] bg-white p-6 shadow-2xl"
-            onClick={(evento) => evento.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-[#16A66A]">
-                  Novo cadastro
-                </p>
-                <h3 className="mt-1 text-2xl font-black text-[#123A78]">
-                  ➕ Acrescentar criança
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Cadastre uma nova criança diretamente pela administração.
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={salvandoNovaCrianca}
-                onClick={() => setAdicionandoCrianca(false)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Nome</label>
-                <input
-                  type="text"
-                  value={novoFormulario.nome}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, nome: evento.target.value }))}
-                  placeholder="Nome completo da criança"
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Data de nascimento</label>
-                <input
-                  type="date"
-                  value={novoFormulario.data_nascimento}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, data_nascimento: evento.target.value }))}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Gênero</label>
-                <select
-                  value={novoFormulario.genero}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, genero: evento.target.value }))}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Feminino">Feminino</option>
-                  <option value="Masculino">Masculino</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Turma</label>
-                <select
-                  value={novoFormulario.turma}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, turma: evento.target.value }))}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                >
-                  <option value="">Selecione</option>
-                  {filtros.slice(1).map((item) => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Status</label>
-                <select
-                  value={novoFormulario.status}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, status: evento.target.value }))}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                >
-                  <option value="disponivel">Disponível</option>
-                  <option value="adotada">Escolhida</option>
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">Cartinha ou desenho</label>
-                <textarea
-                  value={novoFormulario.cartinha_ou_desenho}
-                  onChange={(evento) => setNovoFormulario((atual) => ({ ...atual, cartinha_ou_desenho: evento.target.value }))}
-                  rows={3}
-                  placeholder="Observação ou pedido escrito pela criança..."
-                  className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#16A66A] focus:bg-white focus:ring-2 focus:ring-[#16A66A]/20"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                disabled={salvandoNovaCrianca}
-                onClick={() => setAdicionandoCrianca(false)}
-                className="rounded-2xl bg-gray-100 px-5 py-3 font-black text-gray-600 hover:bg-gray-200"
-              >Cancelar</button>
-              <button
-                type="button"
-                disabled={salvandoNovaCrianca}
-                onClick={salvarNovaCrianca}
-                className="rounded-2xl bg-[#16A66A] px-5 py-3 font-black text-white shadow-sm hover:bg-[#128B58]"
-              >
-                {salvandoNovaCrianca ? "⏳ Cadastrando..." : "💾 Cadastrar criança"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL DE EDIÇÃO */}
-      {editandoCrianca && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#123A78]/70 p-4 backdrop-blur-sm"
-          onClick={() => !salvandoEdicao && setEditandoCrianca(null)}
-        >
-          <div
-            className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-[30px] bg-white p-6 shadow-2xl"
-            onClick={(evento) => evento.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-[#168BE8]">
-                  Editar cadastro
-                </p>
-                <h3 className="mt-1 text-2xl font-black text-[#123A78]">
-                  {editandoCrianca.nome}
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Corrija os dados da criança diretamente pela administração.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                disabled={salvandoEdicao}
-                onClick={() => setEditandoCrianca(null)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Nome
-                </label>
-                <input
-                  type="text"
-                  value={formulario.nome}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, nome: evento.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Data de nascimento
-                </label>
-                <input
-                  type="date"
-                  value={formulario.data_nascimento}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, data_nascimento: evento.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Gênero
-                </label>
-                <select
-                  value={formulario.genero}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, genero: evento.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                >
-                  <option value="">Selecione</option>
-                  <option value="Feminino">Feminino</option>
-                  <option value="Masculino">Masculino</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Turma
-                </label>
-                <select
-                  value={formulario.turma}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, turma: evento.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                >
-                  {filtros.slice(1).map((item) => (
-                    <option key={item} value={item}>{item}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Status
-                </label>
-                <select
-                  value={formulario.status}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, status: evento.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                >
-                  <option value="disponivel">Disponível</option>
-                  <option value="adotada">Escolhida</option>
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="mb-2 block text-xs font-black uppercase tracking-wider text-gray-500">
-                  Cartinha ou desenho
-                </label>
-                <textarea
-                  value={formulario.cartinha_ou_desenho}
-                  onChange={(evento) =>
-                    setFormulario((atual) => ({ ...atual, cartinha_ou_desenho: evento.target.value }))
-                  }
-                  rows={3}
-                  placeholder="Observação ou pedido escrito pela criança..."
-                  className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#123A78] outline-none focus:border-[#168BE8] focus:bg-white focus:ring-2 focus:ring-[#168BE8]/20"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                disabled={salvandoEdicao}
-                onClick={() => setEditandoCrianca(null)}
-                className="rounded-2xl bg-gray-100 px-5 py-3 font-black text-gray-600 hover:bg-gray-200"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                disabled={salvandoEdicao}
-                onClick={salvarEdicao}
-                className="rounded-2xl bg-[#168BE8] px-5 py-3 font-black text-white shadow-sm hover:bg-[#0D75C8]"
-              >
-                {salvandoEdicao ? "⏳ Salvando..." : "💾 Salvar alterações"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* MODAL DA CARTINHA */}
       {imagemSelecionada && (

@@ -162,12 +162,14 @@ export default function CampanhaPage() {
       return;
     }
 
-    if (data && data.length > 0) {
+    const resultado = Array.isArray(data) ? data[0] : data;
+
+    if (resultado) {
       setEstatisticas({
-        total: Number(data[0].total),
-        adotadas: Number(data[0].adotadas),
-        disponiveis: Number(data[0].disponiveis),
-        presentes_recebidos: Number(data[0].presentes_recebidos),
+        total: Number(resultado.total ?? 0),
+        adotadas: Number(resultado.adotadas ?? 0),
+        disponiveis: Number(resultado.disponiveis ?? 0),
+        presentes_recebidos: Number(resultado.presentes_recebidos ?? 0),
       });
     }
   }
@@ -234,8 +236,16 @@ export default function CampanhaPage() {
   async function confirmarAdocao() {
     if (!criancaSelecionada) return;
 
-    if (!nomeAdotante.trim()) {
+    const nome = nomeAdotante.trim();
+    const email = emailAdotante.trim();
+
+    if (!nome) {
       alert("Informe seu nome para confirmar a adoção.");
+      return;
+    }
+
+    if (!email) {
+      alert("Informe seu e-mail para confirmar a adoção.");
       return;
     }
 
@@ -243,8 +253,8 @@ export default function CampanhaPage() {
 
     const { data, error } = await supabase.rpc("adotar_crianca", {
       p_crianca_id: criancaSelecionada.id,
-      p_adotante_nome: nomeAdotante.trim(),
-      p_adotante_email: emailAdotante.trim() || null,
+      p_adotante_nome: nome,
+      p_adotante_email: email,
     });
 
     if (error) {
@@ -867,17 +877,15 @@ export default function CampanhaPage() {
 
                 <label className="mt-4 block">
                   <span className="text-sm font-black text-[#123A78]">
-                    E-mail{" "}
-                    <span className="font-normal text-gray-400">
-                      (opcional)
-                    </span>
+                    Seu e-mail *
                   </span>
 
                   <input
                     type="email"
                     value={emailAdotante}
                     onChange={(e) => setEmailAdotante(e.target.value)}
-                    placeholder="seuemail@exemplo.com"
+                    placeholder="Digite seu e-mail"
+                    required
                     className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-[#168BE8] focus:bg-white"
                   />
                 </label>
