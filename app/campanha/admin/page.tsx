@@ -154,6 +154,10 @@ export default function AdminCampanhaPage() {
     };
   }, [router]);
 
+  const criancasDisponiveis = useMemo(() => {
+    return criancas.filter((crianca) => crianca.status !== "adotada");
+  }, [criancas]);
+
   const criancasFiltradas = useMemo(() => {
     if (filtro === "Todas") {
       return criancasDisponiveis;
@@ -161,10 +165,6 @@ export default function AdminCampanhaPage() {
 
     return criancasDisponiveis.filter((crianca) => crianca.turma === filtro);
   }, [criancasDisponiveis, filtro]);
-
-  const criancasDisponiveis = useMemo(() => {
-    return criancas.filter((crianca) => crianca.status !== "adotada");
-  }, [criancas]);
 
   const criancasAdotadas = useMemo(() => {
     return [...criancas]
