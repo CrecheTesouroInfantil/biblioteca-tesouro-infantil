@@ -32,33 +32,23 @@ const filtros = [
 const coresCards = [
   {
     fundo: "bg-[#DDF3FF]",
+    borda: "border-[#B8E7FF]",
     botao: "bg-[#168BE8] hover:bg-[#0D75C8]",
-    detalhe: "text-[#168BE8]",
   },
   {
-    fundo: "bg-[#FFE0EF]",
+    fundo: "bg-[#FFE3F0]",
+    borda: "border-[#FFD0E3]",
     botao: "bg-[#F02B78] hover:bg-[#D91D65]",
-    detalhe: "text-[#F02B78]",
   },
   {
-    fundo: "bg-[#FFF1BD]",
+    fundo: "bg-[#FFF2BF]",
+    borda: "border-[#FFE39A]",
     botao: "bg-[#F39A12] hover:bg-[#D98000]",
-    detalhe: "text-[#F39A12]",
   },
   {
     fundo: "bg-[#E9DEFF]",
+    borda: "border-[#DCCBFF]",
     botao: "bg-[#7651D9] hover:bg-[#603BC0]",
-    detalhe: "text-[#7651D9]",
-  },
-  {
-    fundo: "bg-[#DDF8D9]",
-    botao: "bg-[#16A66A] hover:bg-[#0D8B57]",
-    detalhe: "text-[#16A66A]",
-  },
-  {
-    fundo: "bg-[#FFE6D2]",
-    botao: "bg-[#F15A3A] hover:bg-[#D94729]",
-    detalhe: "text-[#F15A3A]",
   },
 ];
 
@@ -100,6 +90,7 @@ function emojiTurma(turma: string) {
 
 export default function CampanhaPage() {
   const [criancas, setCriancas] = useState<Crianca[]>([]);
+
   const [estatisticas, setEstatisticas] = useState<Estatisticas>({
     total: 0,
     adotadas: 0,
@@ -119,7 +110,9 @@ export default function CampanhaPage() {
 
   const [adotando, setAdotando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
-  const [cartinhaAberta, setCartinhaAberta] = useState<Crianca | null>(null);
+
+  const [cartinhaAberta, setCartinhaAberta] =
+    useState<Crianca | null>(null);
 
   async function carregarCriancas() {
     const ordemTurmas: Record<string, number> = {
@@ -145,7 +138,9 @@ export default function CampanhaPage() {
       const ordemA = ordemTurmas[a.turma] ?? 99;
       const ordemB = ordemTurmas[b.turma] ?? 99;
 
-      if (ordemA !== ordemB) return ordemA - ordemB;
+      if (ordemA !== ordemB) {
+        return ordemA - ordemB;
+      }
 
       return a.nome.localeCompare(b.nome, "pt-BR");
     });
@@ -169,7 +164,9 @@ export default function CampanhaPage() {
         total: Number(resultado.total ?? 0),
         adotadas: Number(resultado.adotadas ?? 0),
         disponiveis: Number(resultado.disponiveis ?? 0),
-        presentes_recebidos: Number(resultado.presentes_recebidos ?? 0),
+        presentes_recebidos: Number(
+          resultado.presentes_recebidos ?? 0
+        ),
       });
     }
   }
@@ -214,7 +211,9 @@ export default function CampanhaPage() {
       return criancas;
     }
 
-    return criancas.filter((crianca) => crianca.turma === filtro);
+    return criancas.filter(
+      (crianca) => crianca.turma === filtro
+    );
   }, [criancas, filtro]);
 
   function abrirAdocao(crianca: Crianca) {
@@ -236,32 +235,32 @@ export default function CampanhaPage() {
   async function confirmarAdocao() {
     if (!criancaSelecionada) return;
 
-    const nome = nomeAdotante.trim();
-    const email = emailAdotante.trim();
-
-    if (!nome) {
+    if (!nomeAdotante.trim()) {
       alert("Informe seu nome para confirmar a adoção.");
       return;
     }
 
-    if (!email) {
+    if (!emailAdotante.trim()) {
       alert("Informe seu e-mail para confirmar a adoção.");
       return;
     }
 
     setAdotando(true);
 
-    const { data, error } = await supabase.rpc("adotar_crianca", {
-      p_crianca_id: criancaSelecionada.id,
-      p_adotante_nome: nome,
-      p_adotante_email: email,
-    });
+    const { data, error } = await supabase.rpc(
+      "adotar_crianca",
+      {
+        p_crianca_id: criancaSelecionada.id,
+        p_adotante_nome: nomeAdotante.trim(),
+        p_adotante_email: emailAdotante.trim(),
+      }
+    );
 
     if (error) {
       console.error(error);
 
       alert(
-        "Não foi possível concluir a escolha. Essa criança pode já ter sido escolhida por outra pessoa."
+        "Não foi possível concluir a adoção. Essa criança pode já ter sido escolhida por outra pessoa."
       );
 
       setAdotando(false);
@@ -282,7 +281,9 @@ export default function CampanhaPage() {
     }
 
     setCriancas((atual) =>
-      atual.filter((item) => item.id !== criancaSelecionada.id)
+      atual.filter(
+        (item) => item.id !== criancaSelecionada.id
+      )
     );
 
     await carregarEstatisticas();
@@ -292,269 +293,336 @@ export default function CampanhaPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#F8FCFF] text-[#123A78]">
-      {/* Fundo decorativo */}
+    <main className="min-h-screen overflow-x-hidden bg-[#F8FCFF] text-[#123A78]">
+
+      {/* FUNDO */}
+
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-24 top-20 h-64 w-64 rounded-full bg-[#BDEBFF]/70 blur-sm" />
-        <div className="absolute -right-24 top-[420px] h-80 w-80 rounded-full bg-[#FFD5E8]/60 blur-sm" />
-        <div className="absolute left-[35%] top-[900px] h-72 w-72 rounded-full bg-[#FFF0A8]/45 blur-sm" />
+        <div className="absolute -left-32 top-32 h-72 w-72 rounded-full bg-[#C7F0FF] opacity-60" />
+        <div className="absolute -right-32 top-[650px] h-80 w-80 rounded-full bg-[#FFD9EA] opacity-50" />
+        <div className="absolute left-[35%] top-[1100px] h-72 w-72 rounded-full bg-[#FFF1A8] opacity-40" />
       </div>
 
-      {/* CABEÇALHO */}
-      <header className="bg-white/95 px-4 py-3 shadow-sm sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E5F6FF] text-2xl shadow-sm sm:h-14 sm:w-14 sm:text-3xl">
-              🏫
-            </div>
-            <div>
-              <p className="text-[9px] font-black uppercase tracking-[0.18em] text-[#168BE8] sm:text-[10px]">
-                Creche
-              </p>
-              <h1 className="text-base font-black leading-tight text-[#123A78] sm:text-xl">
-                Tesouro Infantil
-              </h1>
-              <p className="text-[11px] font-medium text-gray-500 sm:text-xs">
-                Em parceria com a FENORD
-              </p>
-            </div>
+      {/* TOPO */}
+
+      <header className="bg-white px-4 py-3 shadow-sm sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+
+          <div className="flex items-center">
+            <img
+              src="/campanha/logo-creche.png"
+              alt="Creche Tesouro Infantil"
+              className="h-16 w-auto object-contain sm:h-20"
+            />
           </div>
 
-          <div className="hidden rounded-full bg-[#FFF1BD] px-4 py-2 text-right shadow-sm sm:block">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#F39A12]">
+          <div className="hidden text-right sm:block">
+            <p className="text-xs font-black uppercase tracking-widest text-[#168BE8]">
               Semana das Crianças
             </p>
-            <p className="text-lg font-black text-[#123A78]">2026</p>
+
+            <p className="text-xl font-black text-[#123A78]">
+              2026
+            </p>
           </div>
+
         </div>
       </header>
 
       {/* HERO */}
-      <section className="px-3 pt-3 sm:px-5 sm:pt-5">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[34px] bg-gradient-to-br from-[#64D8FF] via-[#70B9FF] to-[#9277F5] shadow-xl">
-          <div className="relative px-4 pb-5 pt-4 sm:px-8 sm:pb-8 sm:pt-6 lg:px-12">
-            <span className="absolute left-3 top-5 text-2xl sm:left-8 sm:text-4xl">⭐</span>
-            <span className="absolute right-4 top-4 text-2xl sm:right-8 sm:text-4xl">💗</span>
-            <span className="absolute bottom-4 left-5 text-xl sm:left-10 sm:text-3xl">✨</span>
-            <span className="absolute bottom-5 right-5 text-xl sm:right-10 sm:text-3xl">🎈</span>
 
-            <div className="mx-auto max-w-6xl text-center">
-              <div className="inline-flex rounded-full bg-[#FFD52E] px-4 py-1.5 text-[10px] font-black uppercase tracking-wide text-[#123A78] shadow-md sm:px-5 sm:py-2 sm:text-xs">
-                🎈 Semana das Crianças 2026
+      <section className="px-3 pt-4 sm:px-5 sm:pt-6">
+        <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] bg-gradient-to-br from-[#5FCFFF] via-[#6BB9FF] to-[#9879F4] p-3 shadow-xl sm:rounded-[40px] sm:p-5">
+
+          <div className="rounded-[22px] bg-white/95 p-3 shadow-lg sm:rounded-[32px] sm:p-5">
+
+            <img
+              src="/campanha/banner-crianca.png"
+              alt="Escolha e presenteie uma criança"
+              className="mx-auto block w-full max-w-5xl object-contain"
+            />
+
+            <div className="mt-2 grid gap-2 sm:grid-cols-3 sm:gap-3">
+
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("criancas")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="rounded-2xl bg-[#FFB8D8] px-4 py-3 text-sm font-black text-[#123A78] shadow-sm transition hover:scale-[1.02]"
+              >
+                🔎 Escolha uma criança
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("criancas")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="rounded-2xl bg-[#FFE477] px-4 py-3 text-sm font-black text-[#123A78] shadow-sm transition hover:scale-[1.02]"
+              >
+                ❤️ Escolha e presenteie
+              </button>
+
+              <div className="rounded-2xl bg-[#BDEAFF] px-4 py-3 text-center text-sm font-black text-[#123A78] shadow-sm">
+                🎁 Entregue o presente
               </div>
 
-              {/* Faixa de crianças em estilo ilustração, sem depender de imagem externa */}
-              <div className="mx-auto mt-3 flex max-w-2xl items-end justify-center gap-1 text-[3.1rem] leading-none sm:gap-2 sm:text-7xl">
-                <span className="-rotate-6 drop-shadow-md">👦🏻</span>
-                <span className="translate-y-1 drop-shadow-md">👧🏽</span>
-                <span className="translate-y-1 drop-shadow-md">👦🏽</span>
-                <span className="-rotate-6 drop-shadow-md">👧🏻</span>
-              </div>
-
-              <div className="mx-auto -mt-1 max-w-5xl rounded-[30px] bg-white/95 px-4 py-4 shadow-xl sm:px-8 sm:py-6">
-                <p className="text-xl font-black leading-tight text-[#123A78] sm:text-3xl">
-                  Escolha e presenteie uma
-                </p>
-                <h2 className="mt-1 text-[3.25rem] font-black leading-[0.88] tracking-tight text-[#F02B78] drop-shadow-sm sm:text-7xl lg:text-8xl">
-                  CRIANÇA
-                </h2>
-                <p className="mx-auto mt-3 max-w-2xl text-xs font-bold leading-5 text-[#123A78]/80 sm:text-base">
-                  Um pequeno gesto pode transformar o Dia das Crianças em uma grande lembrança! 💗
-                </p>
-              </div>
-
-              <div className="mx-auto mt-4 grid max-w-4xl grid-cols-3 gap-2 sm:gap-3">
-                <div className="rounded-2xl bg-[#FFB8DB] px-2 py-2.5 shadow-md sm:rounded-3xl sm:p-4">
-                  <div className="text-xl sm:text-3xl">🔎</div>
-                  <p className="mt-1 text-[9px] font-black leading-3 text-[#123A78] sm:text-sm">
-                    Escolha uma criança
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-[#FFE47A] px-2 py-2.5 shadow-md sm:rounded-3xl sm:p-4">
-                  <div className="text-xl sm:text-3xl">❤️</div>
-                  <p className="mt-1 text-[9px] font-black leading-3 text-[#123A78] sm:text-sm">
-                    Escolha e presenteie
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-[#BDEBFF] px-2 py-2.5 shadow-md sm:rounded-3xl sm:p-4">
-                  <div className="text-xl sm:text-3xl">🎁</div>
-                  <p className="mt-1 text-[9px] font-black leading-3 text-[#123A78] sm:text-sm">
-                    Entregue o presente
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* INFORMAÇÕES PRINCIPAIS */}
-      <section className="px-4 pt-4 sm:px-5 sm:pt-6">
-        <div className="mx-auto grid max-w-7xl gap-3 md:grid-cols-2">
-          <div className="rounded-[28px] bg-[#DDF3FF] p-4 shadow-sm sm:p-5">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">🧸</div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-wider text-[#168BE8]">
-                  O presente
-                </p>
-                <h3 className="mt-1 text-lg font-black text-[#123A78]">
-                  Um brinquedo cheio de carinho
-                </h3>
-                <p className="mt-1 text-xs leading-5 text-gray-600 sm:text-sm">
-                  Escolha um brinquedo adequado à idade e à faixa etária da criança.
-                </p>
-              </div>
+      {/* FENORD */}
+
+      <section className="px-4 pt-5 sm:px-5">
+        <div className="mx-auto max-w-6xl rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-[#E5EEF7] sm:rounded-[32px] sm:p-6">
+
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+
+            <img
+              src="/campanha/logo-fenord.png"
+              alt="FENORD - Projeto de Extensão"
+              className="h-auto w-full max-w-[330px] object-contain sm:max-w-[390px]"
+            />
+
+            <div className="max-w-md text-center sm:text-left">
+              <p className="text-xs font-black uppercase tracking-widest text-[#168BE8]">
+                Uma ação especial
+              </p>
+
+              <h2 className="mt-1 text-xl font-black text-[#123A78] sm:text-2xl">
+                Semana das Crianças 2026
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Uma parceria para tornar o Dia das Crianças ainda mais
+                especial para nossas crianças.
+              </p>
             </div>
+
           </div>
 
-          <div className="rounded-[28px] bg-[#FFE8F2] p-4 shadow-sm sm:p-5">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">📅</div>
-              <div>
-                <p className="text-xs font-black uppercase tracking-wider text-[#F02B78]">
-                  Entrega
-                </p>
-                <h3 className="mt-1 text-lg font-black text-[#123A78]">
-                  Até 20/10/2026
-                </h3>
-                <p className="mt-1 text-xs leading-5 text-gray-600 sm:text-sm">
-                  Entregue o presente na FENORD, no local indicado pela organização.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ESTATÍSTICAS */}
-      <section className="px-4 pt-5 sm:px-5 sm:pt-7">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 overflow-hidden rounded-[30px] bg-white shadow-lg ring-1 ring-gray-100 lg:grid-cols-4">
-          <div className="p-4 text-center sm:p-6">
-            <div className="text-3xl">👧👦</div>
-            <p className="mt-1 text-3xl font-black text-[#168BE8] sm:mt-2 sm:text-4xl">
-              {estatisticas.total}
-            </p>
-            <p className="text-[11px] font-bold leading-4 text-gray-500 sm:text-sm">
-              Crianças participantes
-            </p>
-          </div>
-
-          <div className="border-l border-gray-100 p-4 text-center sm:p-6">
-            <div className="text-3xl">💗</div>
-            <p className="mt-1 text-3xl font-black text-[#F02B78] sm:mt-2 sm:text-4xl">
-              {estatisticas.adotadas}
-            </p>
-            <p className="text-[11px] font-bold leading-4 text-gray-500 sm:text-sm">
-              Crianças escolhidas
-            </p>
-          </div>
-
-          <div className="border-t border-gray-100 p-4 text-center sm:border-l sm:p-6 lg:border-t-0">
-            <div className="text-3xl">🎁</div>
-            <p className="mt-1 text-3xl font-black text-[#F39A12] sm:mt-2 sm:text-4xl">
-              {estatisticas.disponiveis}
-            </p>
-            <p className="text-[11px] font-bold leading-4 text-gray-500 sm:text-sm">
-              Aguardando presente
-            </p>
-          </div>
-
-          <div className="border-l border-t border-gray-100 p-4 text-center sm:p-6 lg:border-t-0">
-            <div className="text-3xl">📦</div>
-            <p className="mt-1 text-3xl font-black text-[#16A66A] sm:mt-2 sm:text-4xl">
-              {estatisticas.presentes_recebidos}
-            </p>
-            <p className="text-[11px] font-bold leading-4 text-gray-500 sm:text-sm">
-              Presentes recebidos
-            </p>
-          </div>
         </div>
       </section>
 
       {/* COMO PARTICIPAR */}
-      <section className="px-4 pt-9 sm:px-5 sm:pt-12">
-        <div className="mx-auto max-w-7xl">
+
+      <section className="px-4 pt-7 sm:px-5 sm:pt-10">
+        <div className="mx-auto max-w-6xl">
+
           <div className="text-center">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#F02B78] sm:text-sm">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#F02B78] sm:text-sm">
               É simples participar
             </p>
-            <h3 className="mt-1 text-3xl font-black text-[#123A78] sm:text-5xl">
-              Como participar?
-            </h3>
+
+            <h2 className="mt-1 text-3xl font-black text-[#123A78] sm:text-4xl">
+              Como funciona?
+            </h2>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="relative rounded-[28px] bg-[#FFE0EF] p-4 shadow-sm sm:p-6">
-              <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#F02B78] text-xs font-black text-white">
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+
+            <div className="rounded-[28px] bg-[#FFE1EF] p-5 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-xl font-black shadow-sm">
                 01
               </div>
-              <div className="pt-10 text-center">
-                <div className="text-4xl">🔎</div>
-                <h4 className="mt-2 text-lg font-black text-[#123A78]">Escolha</h4>
-                <p className="mt-1 text-xs leading-5 text-gray-600 sm:text-sm">
-                  Encontre uma criança disponível e veja sua idade e turma.
-                </p>
-              </div>
+
+              <h3 className="mt-3 text-xl font-black">
+                Escolha
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Encontre uma criança disponível e veja sua idade e turma.
+              </p>
             </div>
 
-            <div className="relative rounded-[28px] bg-[#FFF1BD] p-4 shadow-sm sm:p-6">
-              <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#F39A12] text-xs font-black text-white">
+            <div className="rounded-[28px] bg-[#FFF1BD] p-5 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-xl font-black shadow-sm">
                 02
               </div>
-              <div className="pt-10 text-center">
-                <div className="text-4xl">💗</div>
-                <h4 className="mt-2 text-lg font-black text-[#123A78]">
-                  Escolha e presenteie
-                </h4>
-                <p className="mt-1 text-xs leading-5 text-gray-600 sm:text-sm">
-                  Informe seu nome e e-mail e confirme que deseja presentear a criança.
-                </p>
-              </div>
+
+              <h3 className="mt-3 text-xl font-black">
+                Presenteie
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Informe seu nome e e-mail e confirme a adoção da criança.
+              </p>
             </div>
 
-            <div className="relative rounded-[28px] bg-[#DDF3FF] p-4 shadow-sm sm:p-6">
-              <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[#168BE8] text-xs font-black text-white">
+            <div className="rounded-[28px] bg-[#DDF3FF] p-5 text-center shadow-sm">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-xl font-black shadow-sm">
                 03
               </div>
-              <div className="pt-10 text-center">
-                <div className="text-4xl">🎁</div>
-                <h4 className="mt-2 text-lg font-black text-[#123A78]">Entregue</h4>
-                <p className="mt-1 text-xs leading-5 text-gray-600 sm:text-sm">
-                  Entregue o presente até <strong>20/10/2026</strong> para organizarmos tudo com carinho.
-                </p>
-              </div>
+
+              <h3 className="mt-3 text-xl font-black">
+                Entregue
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Entregue o presente até <strong>20/10/2026</strong>.
+              </p>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* CRIANÇAS */}
-      <section id="criancas" className="relative px-4 py-10 sm:px-5 sm:py-14">
-        <div className="mx-auto max-w-7xl">
-          <div className="relative text-center">
-            <span className="absolute left-0 top-0 hidden text-4xl sm:block">💗</span>
-            <span className="absolute right-0 top-0 hidden text-4xl sm:block">⭐</span>
+      {/* INFORMAÇÕES */}
 
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#168BE8] sm:text-sm">
-              Escolha quem você deseja presentear
+      <section className="px-4 pt-5 sm:px-5 sm:pt-7">
+        <div className="mx-auto grid max-w-6xl gap-3 sm:grid-cols-3">
+
+          <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#BDEAFF]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E7F8FF] text-2xl">
+                🧸
+              </div>
+
+              <div>
+                <p className="font-black text-[#123A78]">
+                  Brinquedo
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  Adequado à faixa etária
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#FFD1E4]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFF0F7] text-2xl">
+                💌
+              </div>
+
+              <div>
+                <p className="font-black text-[#123A78]">
+                  Cartinha ou desenho
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  Quando disponível
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#FFE399]">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#FFF9DE] text-2xl">
+                📅
+              </div>
+
+              <div>
+                <p className="font-black text-[#123A78]">
+                  Entrega
+                </p>
+
+                <p className="text-sm font-black text-[#F15A3A]">
+                  Até 20/10/2026
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ESTATÍSTICAS */}
+
+      <section className="px-4 pt-6 sm:px-5 sm:pt-8">
+        <div className="mx-auto grid max-w-6xl overflow-hidden rounded-[30px] bg-white shadow-lg sm:grid-cols-2 lg:grid-cols-4">
+
+          <div className="p-5 text-center">
+            <div className="text-3xl">👧👦</div>
+
+            <p className="mt-1 text-3xl font-black text-[#168BE8]">
+              {estatisticas.total}
             </p>
-            <h3 className="mt-1 text-[2rem] font-black leading-tight text-[#123A78] sm:text-5xl">
-              Conheça as crianças 💙
-            </h3>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-gray-500">
-              Escolha uma criança e faça parte dessa história!
+
+            <p className="text-xs font-bold text-gray-500 sm:text-sm">
+              Crianças participantes
             </p>
           </div>
 
-          {/* filtros */}
-          <div className="mt-6 flex gap-2 overflow-x-auto pb-2 sm:flex-wrap sm:justify-center">
+          <div className="border-t border-gray-100 p-5 text-center sm:border-l lg:border-t-0">
+            <div className="text-3xl">💗</div>
+
+            <p className="mt-1 text-3xl font-black text-[#F02B78]">
+              {estatisticas.adotadas}
+            </p>
+
+            <p className="text-xs font-bold text-gray-500 sm:text-sm">
+              Crianças escolhidas
+            </p>
+          </div>
+
+          <div className="border-t border-gray-100 p-5 text-center lg:border-l lg:border-t-0">
+            <div className="text-3xl">🎁</div>
+
+            <p className="mt-1 text-3xl font-black text-[#F39A12]">
+              {estatisticas.disponiveis}
+            </p>
+
+            <p className="text-xs font-bold text-gray-500 sm:text-sm">
+              Aguardando presente
+            </p>
+          </div>
+
+          <div className="border-t border-gray-100 p-5 text-center sm:border-l lg:border-t-0">
+            <div className="text-3xl">📦</div>
+
+            <p className="mt-1 text-3xl font-black text-[#16A66A]">
+              {estatisticas.presentes_recebidos}
+            </p>
+
+            <p className="text-xs font-bold text-gray-500 sm:text-sm">
+              Presentes recebidos
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* CRIANÇAS */}
+
+      <section
+        id="criancas"
+        className="px-4 py-10 sm:px-5 sm:py-14"
+      >
+        <div className="mx-auto max-w-6xl">
+
+          <div className="text-center">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#168BE8] sm:text-sm">
+              Escolha quem você deseja presentear
+            </p>
+
+            <h2 className="mt-1 text-3xl font-black text-[#123A78] sm:text-4xl">
+              Conheça as crianças 💙
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-gray-500">
+              Escolha uma criança, veja sua cartinha quando disponível e
+              faça parte dessa história.
+            </p>
+          </div>
+
+          {/* FILTROS */}
+
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
             {filtros.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setFiltro(item)}
-                className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-black transition sm:px-5 sm:py-3 ${
+                className={`rounded-full px-4 py-2.5 text-xs font-black transition sm:px-5 ${
                   filtro === item
                     ? "bg-[#168BE8] text-white shadow-md"
                     : "bg-white text-[#123A78] shadow-sm ring-1 ring-gray-200 hover:bg-[#F1F8FF]"
@@ -574,224 +642,307 @@ export default function CampanhaPage() {
           {carregando ? (
             <div className="mt-8 rounded-[30px] bg-white p-12 text-center shadow-sm">
               <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-[#DDF3FF] border-t-[#168BE8]" />
+
               <p className="mt-4 text-sm font-bold text-gray-400">
                 Preparando a lista das crianças...
               </p>
             </div>
           ) : (
-            <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {criancasFiltradas.map((crianca, index) => {
-                const cor = coresCards[index % coresCards.length];
+                const cor =
+                  coresCards[index % coresCards.length];
 
                 return (
                   <article
                     key={crianca.id}
-                    className={`group relative overflow-hidden rounded-[30px] ${cor.fundo} p-4 shadow-sm ring-1 ring-black/[0.03] transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-5`}
+                    className={`relative overflow-hidden rounded-[30px] border ${cor.borda} ${cor.fundo} p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg`}
                   >
-                    <span className="absolute right-4 top-3 text-2xl opacity-60">
+
+                    <div className="absolute right-4 top-4 text-2xl opacity-40">
                       {index % 2 === 0 ? "♡" : "✦"}
-                    </span>
+                    </div>
 
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl shadow-sm sm:h-16 sm:w-16 sm:text-3xl">
+
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-3xl shadow-sm">
                         {emojiTurma(crianca.turma)}
                       </div>
 
-                      <span className="rounded-full bg-white/90 px-3 py-1.5 text-[9px] font-black text-green-600 shadow-sm">
+                      <span className="rounded-full bg-white px-3 py-1.5 text-[9px] font-black text-green-600 shadow-sm">
                         DISPONÍVEL
                       </span>
+
                     </div>
 
-                    <h4 className="mt-4 text-lg font-black text-[#123A78] sm:text-xl">
+                    <h3 className="mt-5 text-xl font-black text-[#123A78]">
                       {crianca.nome}
-                    </h4>
+                    </h3>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
-                      <span className="font-bold text-gray-600">
-                        {calcularIdade(crianca.data_nascimento)}
-                      </span>
-                      <span className="text-gray-300">•</span>
-                      <span className={`font-black ${cor.detalhe}`}>
-                        {crianca.turma}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-sm font-bold text-gray-600">
+                      {calcularIdade(crianca.data_nascimento)}
+                    </p>
 
-                    {crianca.cartinha_ou_desenho && (
-                      <div className="mt-4 rounded-2xl bg-white/70 p-3 text-xs leading-5 text-gray-600">
-                        💌 <strong>Mensagem:</strong> {crianca.cartinha_ou_desenho}
-                      </div>
-                    )}
+                    <p className="mt-1 text-sm font-black text-[#168BE8]">
+                      {crianca.turma}
+                    </p>
 
                     {crianca.cartinha_url && (
                       <button
                         type="button"
-                        onClick={() => setCartinhaAberta(crianca)}
-                        className="mt-3 w-full rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#F02B78] shadow-sm ring-1 ring-[#FFD2E6] transition hover:bg-[#FFF5FA]"
+                        onClick={() =>
+                          setCartinhaAberta(crianca)
+                        }
+                        className="mt-4 w-full rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#F02B78] shadow-sm ring-1 ring-[#FFD1E4] transition hover:bg-[#FFF7FB]"
                       >
                         💌 Ver cartinha ou desenho
                       </button>
                     )}
 
+                    {crianca.cartinha_ou_desenho &&
+                      !crianca.cartinha_url && (
+                        <div className="mt-4 rounded-2xl bg-white/75 p-3 text-xs leading-5 text-gray-600">
+                          💌{" "}
+                          <strong>Cartinha:</strong>{" "}
+                          {crianca.cartinha_ou_desenho}
+                        </div>
+                      )}
+
                     <button
                       type="button"
                       onClick={() => abrirAdocao(crianca)}
-                      className={`mt-3 w-full rounded-2xl px-4 py-3.5 text-sm font-black text-white shadow-md transition ${cor.botao}`}
+                      className={`mt-4 w-full rounded-2xl px-4 py-3.5 text-sm font-black text-white shadow-sm transition ${cor.botao}`}
                     >
                       🎁 Escolher e presentear
                     </button>
+
                   </article>
                 );
               })}
             </div>
           )}
 
-          {!carregando && criancasFiltradas.length === 0 && (
-            <div className="mt-8 rounded-[30px] bg-white p-10 text-center shadow-sm">
-              <div className="text-5xl">💙</div>
-              <p className="mt-4 text-lg font-black text-[#123A78]">
-                Essa turma já está toda escolhida!
-              </p>
-              <p className="mt-1 text-sm text-gray-400">
-                Tente outra turma para encontrar uma criança disponível.
-              </p>
-            </div>
-          )}
+          {!carregando &&
+            criancasFiltradas.length === 0 && (
+              <div className="mt-8 rounded-[30px] bg-white p-10 text-center shadow-sm">
+                <div className="text-5xl">💙</div>
+
+                <p className="mt-4 text-lg font-black text-[#123A78]">
+                  Essa turma já está toda escolhida!
+                </p>
+
+                <p className="mt-1 text-sm text-gray-400">
+                  Escolha outra turma para encontrar uma criança
+                  disponível.
+                </p>
+              </div>
+            )}
+
         </div>
       </section>
 
       {/* RODAPÉ */}
-      <footer className="relative overflow-hidden bg-[#123A78] px-5 py-10 text-white">
-        <div className="mx-auto max-w-7xl text-center">
-          <div className="text-4xl">💙 💗 💛</div>
-          <h3 className="mt-4 text-2xl font-black">
-            Juntos por infâncias mais felizes!
-          </h3>
-          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-white/70">
-            Cada presente é um gesto de carinho. Obrigado por fazer parte da Semana das Crianças da Creche Tesouro Infantil.
+
+      <footer className="bg-[#123A78] px-5 py-10 text-white">
+        <div className="mx-auto max-w-6xl text-center">
+
+          <img
+            src="/campanha/logo-creche.png"
+            alt="Creche Tesouro Infantil"
+            className="mx-auto h-20 w-auto object-contain brightness-0 invert"
+          />
+
+          <p className="mt-4 text-lg font-black">
+            Juntos por uma Semana das Crianças especial! 💙
           </p>
-          <div className="mt-6">
-            <p className="font-black">Creche Tesouro Infantil</p>
-            <p className="mt-1 text-xs text-white/60">Em parceria com a FENORD</p>
+
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-white/70">
+            Cada presente é um gesto de carinho e pode transformar o
+            Dia das Crianças em uma lembrança inesquecível.
+          </p>
+
+          <div className="mt-6 flex justify-center">
+            <img
+              src="/campanha/logo-fenord.png"
+              alt="FENORD"
+              className="h-auto w-full max-w-[220px] rounded-xl bg-white p-2 object-contain"
+            />
           </div>
+
         </div>
       </footer>
 
-      {/* CARTINHA */}
+      {/* MODAL CARTINHA */}
+
       {cartinhaAberta?.cartinha_url && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-[#123A78]/75 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-[#123A78]/80 p-3 backdrop-blur-sm sm:p-5"
           onClick={() => setCartinhaAberta(null)}
         >
+
           <div
-            className="relative max-h-[94vh] w-full max-w-3xl overflow-hidden rounded-[30px] bg-white p-4 shadow-2xl sm:p-6"
-            onClick={(evento) => evento.stopPropagation()}
+            className="max-h-[94vh] w-full max-w-3xl overflow-hidden rounded-[28px] bg-white p-4 shadow-2xl sm:p-6"
+            onClick={(evento) =>
+              evento.stopPropagation()
+            }
           >
-            <div className="flex items-start justify-between gap-4 pb-4">
+
+            <div className="flex items-start justify-between gap-4">
+
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-[#F02B78]">
                   💌 Cartinha ou desenho
                 </p>
+
                 <h3 className="mt-1 text-2xl font-black text-[#123A78]">
                   {cartinhaAberta.nome}
                 </h3>
+
                 <p className="mt-1 text-sm text-gray-500">
-                  {cartinhaAberta.turma} • {calcularIdade(cartinhaAberta.data_nascimento)}
+                  {cartinhaAberta.turma} •{" "}
+                  {calcularIdade(
+                    cartinhaAberta.data_nascimento
+                  )}
                 </p>
               </div>
+
               <button
                 type="button"
-                onClick={() => setCartinhaAberta(null)}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-                aria-label="Fechar cartinha"
+                onClick={() =>
+                  setCartinhaAberta(null)
+                }
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500"
               >
                 ✕
               </button>
+
             </div>
 
-            <div className="max-h-[76vh] overflow-auto rounded-2xl bg-[#F8FCFF] p-2 text-center">
+            <div className="mt-4 max-h-[72vh] overflow-auto rounded-2xl bg-[#F8FCFF] p-2 text-center">
               <img
                 src={cartinhaAberta.cartinha_url}
                 alt={`Cartinha ou desenho de ${cartinhaAberta.nome}`}
-                className="mx-auto max-h-[72vh] w-auto max-w-full rounded-xl object-contain"
+                className="mx-auto max-h-[68vh] w-auto max-w-full rounded-xl object-contain"
               />
             </div>
 
             <button
               type="button"
-              onClick={() => setCartinhaAberta(null)}
-              className="mt-4 w-full rounded-2xl bg-[#168BE8] px-5 py-3.5 text-sm font-black text-white shadow-sm hover:bg-[#0D75C8]"
+              onClick={() =>
+                setCartinhaAberta(null)
+              }
+              className="mt-4 w-full rounded-2xl bg-[#168BE8] px-5 py-3.5 text-sm font-black text-white"
             >
               Voltar para a criança
             </button>
+
           </div>
         </div>
       )}
 
-      {/* ADOÇÃO */}
+      {/* MODAL ADOÇÃO */}
+
       {criancaSelecionada && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#123A78]/60 p-0 backdrop-blur-sm sm:items-center sm:p-5">
-          <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-[32px] bg-white p-6 shadow-2xl sm:max-w-lg sm:rounded-[32px]">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#123A78]/65 p-0 backdrop-blur-sm sm:items-center sm:p-5">
+
+          <div className="max-h-[94vh] w-full overflow-y-auto rounded-t-[32px] bg-white p-5 shadow-2xl sm:max-w-lg sm:rounded-[32px] sm:p-7">
+
             {!sucesso ? (
               <>
+
                 <div className="flex items-start justify-between gap-4">
+
                   <div>
                     <p className="text-xs font-black uppercase tracking-widest text-[#168BE8]">
                       Você escolheu
                     </p>
+
                     <h3 className="mt-1 text-2xl font-black text-[#123A78]">
                       {criancaSelecionada.nome}
                     </h3>
+
                     <p className="mt-1 text-sm text-gray-500">
-                      {criancaSelecionada.turma} • {calcularIdade(criancaSelecionada.data_nascimento)}
+                      {criancaSelecionada.turma} •{" "}
+                      {calcularIdade(
+                        criancaSelecionada.data_nascimento
+                      )}
                     </p>
                   </div>
 
                   <button
                     type="button"
                     onClick={fecharModal}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500"
                   >
                     ✕
                   </button>
+
                 </div>
 
-                <div className="mt-6 rounded-3xl bg-[#FFF1BD] p-5 text-center">
-                  <div className="text-4xl">🎁</div>
+                <div className="mt-5 rounded-3xl bg-[#FFF1BD] p-5 text-center">
+
+                  <div className="text-4xl">
+                    🎁
+                  </div>
+
                   <p className="mt-2 text-sm font-bold leading-6 text-[#123A78]">
-                    Que lindo! Você está escolhendo fazer parte da história de{" "}
-                    <strong>{criancaSelecionada.nome}</strong>. 💗
+                    Que lindo! Você está escolhendo
+                    presentear{" "}
+                    <strong>
+                      {criancaSelecionada.nome}
+                    </strong>
+                    . 💗
                   </p>
+
                 </div>
 
-                <label className="mt-6 block">
-                  <span className="text-sm font-black text-[#123A78]">Seu nome *</span>
+                <label className="mt-5 block">
+
+                  <span className="text-sm font-black text-[#123A78]">
+                    Seu nome *
+                  </span>
+
                   <input
                     type="text"
                     value={nomeAdotante}
-                    onChange={(e) => setNomeAdotante(e.target.value)}
+                    onChange={(e) =>
+                      setNomeAdotante(e.target.value)
+                    }
                     placeholder="Digite seu nome"
                     className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-[#168BE8] focus:bg-white"
                   />
+
                 </label>
 
                 <label className="mt-4 block">
-                  <span className="text-sm font-black text-[#123A78]">Seu e-mail *</span>
+
+                  <span className="text-sm font-black text-[#123A78]">
+                    Seu e-mail *
+                  </span>
+
                   <input
                     type="email"
                     value={emailAdotante}
-                    onChange={(e) => setEmailAdotante(e.target.value)}
-                    placeholder="Digite seu e-mail"
-                    required
+                    onChange={(e) =>
+                      setEmailAdotante(e.target.value)
+                    }
+                    placeholder="seuemail@exemplo.com"
                     className="mt-2 w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-sm outline-none focus:border-[#168BE8] focus:bg-white"
                   />
+
+                  <p className="mt-1 text-xs text-gray-400">
+                    Usaremos apenas para registrar sua adoção.
+                  </p>
+
                 </label>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+
                   <button
                     type="button"
                     onClick={fecharModal}
                     disabled={adotando}
-                    className="rounded-2xl border border-gray-200 px-5 py-3.5 text-sm font-black text-gray-500 hover:bg-gray-50 sm:flex-1"
+                    className="rounded-2xl border border-gray-200 px-5 py-3.5 text-sm font-black text-gray-500 hover:bg-gray-50"
                   >
                     Cancelar
                   </button>
@@ -800,38 +951,58 @@ export default function CampanhaPage() {
                     type="button"
                     onClick={confirmarAdocao}
                     disabled={adotando}
-                    className="rounded-2xl bg-[#F02B78] px-5 py-3.5 text-sm font-black text-white shadow-sm hover:bg-[#D91D65] disabled:opacity-60 sm:flex-1"
+                    className="rounded-2xl bg-[#F02B78] px-5 py-3.5 text-sm font-black text-white shadow-sm hover:bg-[#D91D65] disabled:opacity-60"
                   >
-                    {adotando ? "Confirmando..." : "❤️ Confirmar adoção"}
+                    {adotando
+                      ? "Confirmando..."
+                      : "❤️ Confirmar adoção"}
                   </button>
+
                 </div>
+
               </>
             ) : (
-              <div className="py-6 text-center">
+
+              <div className="py-5 text-center">
+
                 <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#DDF8D9] text-5xl">
                   🎉
                 </div>
 
-                <h3 className="mt-6 text-3xl font-black text-[#123A78]">
-                  Escolha confirmada!
+                <h3 className="mt-5 text-3xl font-black text-[#123A78]">
+                  Adoção confirmada!
                 </h3>
 
                 <p className="mt-3 text-sm leading-6 text-gray-500">
-                  Obrigado, <strong className="text-[#123A78]">{nomeAdotante}</strong>!
+                  Obrigado,{" "}
+                  <strong className="text-[#123A78]">
+                    {nomeAdotante}
+                  </strong>
+                  !
                 </p>
 
                 <p className="mt-2 text-sm leading-6 text-gray-500">
                   Você escolheu presentear{" "}
-                  <strong className="text-[#123A78]">{criancaSelecionada.nome}</strong>. 💗
+                  <strong className="text-[#123A78]">
+                    {criancaSelecionada.nome}
+                  </strong>
+                  . 💗
                 </p>
 
-                <div className="mt-6 rounded-3xl bg-[#DDF3FF] p-5 text-left">
+                <div className="mt-5 rounded-3xl bg-[#DDF3FF] p-5 text-left">
+
                   <p className="text-xs font-black uppercase tracking-wide text-[#168BE8]">
                     Agora é só preparar o presente 🎁
                   </p>
+
                   <p className="mt-2 text-sm leading-6 text-gray-600">
-                    Entregue o brinquedo até <strong>20/10/2026</strong>, para que nossa equipe possa organizar tudo antes da Semana das Crianças.
+                    Entregue o presente até{" "}
+                    <strong>
+                      20/10/2026
+                    </strong>
+                    .
                   </p>
+
                 </div>
 
                 <button
@@ -841,11 +1012,14 @@ export default function CampanhaPage() {
                 >
                   Voltar para a campanha
                 </button>
+
               </div>
             )}
+
           </div>
         </div>
       )}
+
     </main>
   );
 }
