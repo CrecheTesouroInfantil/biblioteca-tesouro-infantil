@@ -206,13 +206,13 @@ export default function AdminCampanhaPage() {
 
     const idade = calcularIdade(crianca.data_nascimento);
 
-    const assunto = `Campanha “Adote uma Criança” – ${crianca.nome}`;
+    const assunto = `Campanha “Escolha e Presenteie uma Criança” – ${crianca.nome}`;
 
     const mensagemEmail = `Olá, ${
       crianca.adotante_nome || "querido(a) adotante"
     }!
 
-Parabéns! Você escolheu participar da campanha “Adote uma Criança” e presentear uma criança da Creche Tesouro Infantil. 💙
+Parabéns! Você escolheu participar da campanha “Escolha e Presenteie uma Criança” e presentear uma criança da Creche Tesouro Infantil. 💙
 
 🎁 Criança escolhida: ${crianca.nome}
 🎂 Idade: ${idade}
@@ -221,7 +221,7 @@ Parabéns! Você escolheu participar da campanha “Adote uma Criança” e pres
 A criança preparou uma cartinha com alguns desejos. O presente não precisa ser exatamente o que foi pedido na cartinha. O mais importante é que seja escolhido com carinho e que seja adequado à idade da criança.
 
 📅 Semana das Crianças:
-05 a 09 de outubro de 2026.
+19 a 23 de outubro de 2026.
 
 🎁 Entrega do presente:
 Pedimos que o presente seja entregue até o dia 20/10/2026.
@@ -233,7 +233,7 @@ Com carinho,
 Talita Cavalcante
 (33) 99836-7102
 Creche Tesouro Infantil
-Campanha “Adote uma Criança”
+Campanha “Escolha e Presenteie uma Criança”
 Parceria FENORD`;
 
     const url =
