@@ -196,6 +196,55 @@ export default function AdminCampanhaPage() {
     });
   }
 
+  function prepararEmail(crianca: Crianca) {
+    if (!crianca.adotante_email) {
+      setMensagem(
+        `⚠️ Não há e-mail cadastrado para o adotante de ${crianca.nome}.`
+      );
+      return;
+    }
+
+    const idade = calcularIdade(crianca.data_nascimento);
+
+    const assunto = `Campanha “Adote uma Criança” – ${crianca.nome}`;
+
+    const mensagemEmail = `Olá, ${
+      crianca.adotante_nome || "querido(a) adotante"
+    }!
+
+Parabéns! Você escolheu participar da campanha “Adote uma Criança” e presentear uma criança da Creche Tesouro Infantil. 💙
+
+🎁 Criança escolhida: ${crianca.nome}
+🎂 Idade: ${idade}
+🏫 Turma: ${crianca.turma}
+
+A criança preparou uma cartinha com alguns desejos. O presente não precisa ser exatamente o que foi pedido na cartinha. O mais importante é que seja escolhido com carinho e que seja adequado à idade da criança.
+
+📅 Semana das Crianças:
+05 a 09 de outubro de 2026.
+
+🎁 Entrega do presente:
+Pedimos que o presente seja entregue até o dia 20/10/2026.
+
+Agradecemos imensamente por fazer parte dessa iniciativa e contribuir para tornar o Dia das Crianças ainda mais especial. ❤️
+
+Com carinho,
+
+Talita Cavalcante
+(33) 99836-7102
+Creche Tesouro Infantil
+Campanha “Adote uma Criança”
+Parceria FENORD`;
+
+    const url =
+      `https://outlook.live.com/mail/deeplink/compose` +
+      `?to=${encodeURIComponent(crianca.adotante_email)}` +
+      `&subject=${encodeURIComponent(assunto)}` +
+      `&body=${encodeURIComponent(mensagemEmail)}`;
+
+    window.open(url, "_blank");
+  }
+
   async function atualizarPainel() {
     await carregarCriancas();
     setMensagem("🔄 Painel atualizado com os dados mais recentes.");
@@ -552,6 +601,7 @@ export default function AdminCampanhaPage() {
                       <th className="px-4 py-4">Nome do adotante</th>
                       <th className="px-4 py-4">E-mail</th>
                       <th className="px-4 py-4">Data da adoção</th>
+                      <th className="px-4 py-4">Ação</th>
                     </tr>
                   </thead>
 
@@ -586,6 +636,16 @@ export default function AdminCampanhaPage() {
 
                         <td className="px-4 py-4 text-gray-600">
                           {formatarDataAdocao(crianca.data_adocao)}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <button
+                            type="button"
+                            onClick={() => prepararEmail(crianca)}
+                            className="whitespace-nowrap rounded-xl bg-[#168BE8] px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-[#0D75C8]"
+                          >
+                            📧 Preparar e-mail
+                          </button>
                         </td>
                       </tr>
                     ))}
