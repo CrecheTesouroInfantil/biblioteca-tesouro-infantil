@@ -318,14 +318,13 @@ Parceria FENORD`;
     const url =
       `https://outlook.live.com/mail/deeplink/compose` +
       `?to=${encodeURIComponent(crianca.adotante_email)}` +
-      `&subject=${encodeURIComponent(assunto)}` +
-      `&body=${encodeURIComponent(textoAlternativo)}`;
+      `&subject=${encodeURIComponent(assunto)}`;
 
-    // Abre o Outlook imediatamente para evitar bloqueio de pop-up.
+    // O Outlook Web não aceita HTML pelo parâmetro body do deeplink.
+    // Por isso, abrimos a mensagem já com destinatário e assunto e
+    // colocamos a versão HTML completa na área de transferência.
     window.open(url, "_blank");
 
-    // Copia a versão HTML rica. No Outlook, basta colar no corpo da mensagem
-    // para preservar o layout, cores, cartões e banner.
     try {
       if (navigator.clipboard && "ClipboardItem" in window) {
         const item = new ClipboardItem({
