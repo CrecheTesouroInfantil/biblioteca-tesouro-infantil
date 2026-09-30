@@ -115,13 +115,6 @@ export default function CampanhaPage() {
     useState<Crianca | null>(null);
 
   async function carregarCriancas() {
-    const ordemTurmas: Record<string, number> = {
-      "Berçário": 1,
-      "Maternal I": 2,
-      "Maternal II": 3,
-      "Pré-escola": 4,
-    };
-
     const { data, error } = await supabase
       .from("criancas_publicas")
       .select(
@@ -134,16 +127,11 @@ export default function CampanhaPage() {
       return;
     }
 
-    const ordenadas = [...(data || [])].sort((a, b) => {
-      const ordemA = ordemTurmas[a.turma] ?? 99;
-      const ordemB = ordemTurmas[b.turma] ?? 99;
-
-      if (ordemA !== ordemB) {
-        return ordemA - ordemB;
-      }
-
-      return a.nome.localeCompare(b.nome, "pt-BR");
-    });
+    const ordenadas = [...(data || [])].sort((a, b) =>
+      a.nome.localeCompare(b.nome, "pt-BR", {
+        sensitivity: "base",
+      })
+    );
 
     setCriancas(ordenadas);
   }
