@@ -196,161 +196,6 @@ export default function AdminCampanhaPage() {
     });
   }
 
-  async function prepararEmail(crianca: Crianca) {
-    if (!crianca.adotante_email) {
-      setMensagem(
-        `⚠️ Não há e-mail cadastrado para o adotante de ${crianca.nome}.`
-      );
-      return;
-    }
-
-    const idade = calcularIdade(crianca.data_nascimento);
-    const nomeAdotante = crianca.adotante_nome || "querido(a) adotante";
-
-    const assunto = `Campanha “Escolha e Presenteie uma Criança” – ${crianca.nome}`;
-
-    const htmlEmail = `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Escolha e Presenteie uma Criança</title>
-</head>
-<body style="margin:0;padding:0;background:#f4f8fc;font-family:Arial,Helvetica,sans-serif;color:#334155;">
-  <div style="width:100%;background:#f4f8fc;padding:28px 12px;box-sizing:border-box;">
-    <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 18px rgba(18,58,120,.10);">
-      <div style="background:linear-gradient(135deg,#e9f7ff 0%,#fff0f7 100%);padding:26px 24px 18px;text-align:center;">
-        <img src="https://biblioteca-tesouro-infantil.vercel.app/campanha/banner-email-adote.png" alt="Campanha Escolha e Presenteie uma Criança" style="display:block;width:100%;max-width:632px;height:auto;margin:0 auto;border:0;border-radius:18px;" />
-      </div>
-
-      <div style="padding:30px 30px 34px;">
-        <p style="margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#168be8;">Campanha Escolha e Presenteie uma Criança</p>
-        <h1 style="margin:0 0 22px;font-size:28px;line-height:1.2;color:#123a78;">Olá, ${nomeAdotante}!</h1>
-
-        <p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#475569;">
-          Parabéns! Você escolheu participar da nossa campanha e presentear uma criança da <strong style="color:#123a78;">Creche Tesouro Infantil</strong>. 💙
-        </p>
-
-        <div style="margin:24px 0;padding:22px;border-radius:20px;background:#f1f8ff;border:1px solid #d8edff;">
-          <p style="margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#168be8;">Criança escolhida</p>
-          <p style="margin:0 0 16px;font-size:25px;font-weight:800;color:#123a78;">🎁 ${crianca.nome}</p>
-          <table role="presentation" style="width:100%;border-collapse:separate;border-spacing:8px 0;">
-            <tr>
-              <td style="width:50%;background:#ffffff;border-radius:14px;padding:13px 12px;text-align:center;vertical-align:top;">
-                <div style="font-size:20px;">🎂</div>
-                <div style="margin-top:5px;font-size:12px;color:#64748b;">Idade</div>
-                <div style="margin-top:3px;font-size:15px;font-weight:800;color:#123a78;">${idade}</div>
-              </td>
-              <td style="width:50%;background:#ffffff;border-radius:14px;padding:13px 12px;text-align:center;vertical-align:top;">
-                <div style="font-size:20px;">🏫</div>
-                <div style="margin-top:5px;font-size:12px;color:#64748b;">Turma</div>
-                <div style="margin-top:3px;font-size:15px;font-weight:800;color:#123a78;">${crianca.turma}</div>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <div style="margin:24px 0;padding:20px 22px;border-radius:18px;background:#fff7fb;border-left:5px solid #f02b78;">
-          <p style="margin:0 0 8px;font-size:16px;font-weight:800;color:#123a78;">💌 Sobre a cartinha</p>
-          <p style="margin:0;font-size:15px;line-height:1.7;color:#475569;">
-            A criança preparou uma cartinha com alguns desejos. O presente <strong>não precisa ser exatamente o que foi pedido</strong>. O mais importante é que seja escolhido com carinho e seja adequado à idade da criança.
-          </p>
-        </div>
-
-        <div style="margin:24px 0;padding:20px 22px;border-radius:18px;background:#f8fbff;border:1px solid #e2edf7;">
-          <p style="margin:0 0 8px;font-size:16px;font-weight:800;color:#123a78;">📅 Semana das Crianças</p>
-          <p style="margin:0;font-size:17px;font-weight:800;color:#168be8;">19 a 23 de outubro de 2026</p>
-        </div>
-
-        <div style="margin:24px 0;padding:20px 22px;border-radius:18px;background:#fff9e8;border:1px solid #f8df9b;">
-          <p style="margin:0 0 8px;font-size:16px;font-weight:800;color:#8a5a00;">🎁 Entrega do presente</p>
-          <p style="margin:0;font-size:15px;line-height:1.7;color:#5f4a20;">
-            Pedimos que o presente seja entregue até o dia <strong>20/10/2026</strong>, para que nossa equipe possa organizar tudo com carinho.
-          </p>
-        </div>
-
-        <p style="margin:28px 0 0;font-size:16px;line-height:1.7;color:#475569;text-align:center;">
-          Agradecemos imensamente por fazer parte dessa iniciativa e ajudar a tornar a Semana das Crianças ainda mais especial. ❤️
-        </p>
-
-        <div style="margin-top:30px;padding-top:22px;border-top:1px solid #e8eef5;text-align:center;">
-          <p style="margin:0;font-size:15px;line-height:1.7;color:#475569;">Com carinho,</p>
-          <p style="margin:8px 0 0;font-size:18px;font-weight:800;color:#123a78;">Talita Cavalcante</p>
-          <p style="margin:4px 0 0;font-size:14px;color:#64748b;">(33) 99836-7102</p>
-          <p style="margin:4px 0 0;font-size:14px;font-weight:700;color:#123a78;">Creche Tesouro Infantil</p>
-          <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Campanha “Escolha e Presenteie uma Criança”</p>
-          <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Parceria FENORD</p>
-        </div>
-      </div>
-
-      <div style="padding:14px 20px;background:#123a78;text-align:center;">
-        <p style="margin:0;font-size:12px;color:#ffffff;">Creche Tesouro Infantil • Topázio – Teófilo Otoni/MG</p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-    const textoAlternativo = `Olá, ${nomeAdotante}!
-
-Parabéns! Você escolheu participar da campanha “Escolha e Presenteie uma Criança” e presentear uma criança da Creche Tesouro Infantil. 💙
-
-🎁 Criança escolhida: ${crianca.nome}
-🎂 Idade: ${idade}
-🏫 Turma: ${crianca.turma}
-
-💌 A criança preparou uma cartinha com alguns desejos. O presente não precisa ser exatamente o que foi pedido. O mais importante é que seja escolhido com carinho e seja adequado à idade da criança.
-
-📅 Semana das Crianças: 19 a 23 de outubro de 2026.
-
-🎁 Entrega do presente: até 20/10/2026.
-
-Agradecemos imensamente por fazer parte dessa iniciativa e ajudar a tornar a Semana das Crianças ainda mais especial. ❤️
-
-Com carinho,
-Talita Cavalcante
-(33) 99836-7102
-Creche Tesouro Infantil
-Campanha “Escolha e Presenteie uma Criança”
-Parceria FENORD`;
-
-    const url =
-      `https://outlook.live.com/mail/deeplink/compose` +
-      `?to=${encodeURIComponent(crianca.adotante_email)}` +
-      `&subject=${encodeURIComponent(assunto)}`;
-
-    // O Outlook Web não aceita HTML pelo parâmetro body do deeplink.
-    // Por isso, abrimos a mensagem já com destinatário e assunto e
-    // colocamos a versão HTML completa na área de transferência.
-    window.open(url, "_blank");
-
-    try {
-      if (navigator.clipboard && "ClipboardItem" in window) {
-        const item = new ClipboardItem({
-          "text/html": new Blob([htmlEmail], { type: "text/html" }),
-          "text/plain": new Blob([textoAlternativo], { type: "text/plain" }),
-        });
-
-        await navigator.clipboard.write([item]);
-
-        setMensagem(
-          `✅ E-mail preparado para ${crianca.adotante_nome || "o adotante"}. O layout completo foi copiado. No Outlook, cole no corpo da mensagem.`
-        );
-      } else {
-        await navigator.clipboard.writeText(textoAlternativo);
-        setMensagem(
-          "📧 Outlook aberto. O texto foi copiado, mas este navegador não permitiu copiar o layout completo."
-        );
-      }
-    } catch (error) {
-      console.error("Não foi possível copiar o layout do e-mail:", error);
-      setMensagem(
-        "📧 Outlook aberto. O layout não pôde ser copiado automaticamente."
-      );
-    }
-  }
-
   async function atualizarPainel() {
     await carregarCriancas();
     setMensagem("🔄 Painel atualizado com os dados mais recentes.");
@@ -434,7 +279,7 @@ Parceria FENORD`;
       const extensao =
         arquivo.name.split(".").pop()?.toLowerCase() || "jpg";
 
-      const caminho = `${crianca.id}.${extensao}`;
+      const caminho = `${crianca.id}-${Date.now()}.${extensao}`;
 
       console.log("📂 Bucket:", "cartinhas");
       console.log("📄 Caminho:", caminho);
@@ -707,7 +552,6 @@ Parceria FENORD`;
                       <th className="px-4 py-4">Nome do adotante</th>
                       <th className="px-4 py-4">E-mail</th>
                       <th className="px-4 py-4">Data da adoção</th>
-                      <th className="px-4 py-4">Ação</th>
                     </tr>
                   </thead>
 
@@ -742,16 +586,6 @@ Parceria FENORD`;
 
                         <td className="px-4 py-4 text-gray-600">
                           {formatarDataAdocao(crianca.data_adocao)}
-                        </td>
-
-                        <td className="px-4 py-4">
-                          <button
-                            type="button"
-                            onClick={() => prepararEmail(crianca)}
-                            className="whitespace-nowrap rounded-xl bg-[#168BE8] px-4 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-[#0D75C8]"
-                          >
-                            📧 Preparar e-mail
-                          </button>
                         </td>
                       </tr>
                     ))}
