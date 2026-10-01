@@ -19,6 +19,8 @@ interface Emprestimo {
   devolvido: boolean;
 }
 
+const EMAIL_ADMIN = "crechetesouroinfantil@hotmail.com";
+
 export default function Livro() {
   const params = useParams();
 
@@ -28,10 +30,38 @@ export default function Livro() {
   const [abrirReserva, setAbrirReserva] = useState(false);
   const [abrirEmprestimo, setAbrirEmprestimo] = useState(false);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [verificandoAdmin, setVerificandoAdmin] = useState(true);
+
   useEffect(() => {
     buscarLivro();
     buscarHistorico();
+    verificarAdministrador();
   }, []);
+
+  async function verificarAdministrador() {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const emailUsuario = user?.email?.toLowerCase().trim();
+
+      if (
+        emailUsuario &&
+        emailUsuario === EMAIL_ADMIN.toLowerCase()
+      ) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.log("Erro ao verificar usuário:", error);
+      setIsAdmin(false);
+    } finally {
+      setVerificandoAdmin(false);
+    }
+  }
 
   async function buscarLivro() {
     const { data, error } = await supabase
@@ -65,12 +95,34 @@ export default function Livro() {
     setHistorico(data || []);
   }
 
+  function abrirModalEmprestimo() {
+    if (verificandoAdmin) {
+      return;
+    }
+
+    if (!isAdmin) {
+      return;
+    }
+
+    setAbrirEmprestimo(true);
+  }
+
+  function imprimirEtiqueta() {
+    if (verificandoAdmin) {
+      return;
+    }
+
+    if (!isAdmin) {
+      return;
+    }
+
+    window.print();
+  }
+
   if (!livro) {
     return (
       <main className="min-h-screen bg-[#eef5ff] flex items-center justify-center p-6">
-
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 text-center">
-
           <div className="text-5xl mb-4">
             📚
           </div>
@@ -78,9 +130,7 @@ export default function Livro() {
           <p className="text-gray-500 font-semibold">
             Carregando informações do livro...
           </p>
-
         </div>
-
       </main>
     );
   }
@@ -90,10 +140,6 @@ export default function Livro() {
   const enderecoLivro =
     `https://biblioteca-tesouro-infantil-es3o-lyart.vercel.app/livro/${livro.id}`;
 
-  function imprimirEtiqueta() {
-    window.print();
-  }
-
   return (
     <>
       <ReservaModal
@@ -102,14 +148,15 @@ export default function Livro() {
         livroId={livro.id}
       />
 
-      <EmprestimoModal
-        aberto={abrirEmprestimo}
-        fechar={() => setAbrirEmprestimo(false)}
-        livroId={livro.id}
-      />
+      {isAdmin && (
+        <EmprestimoModal
+          aberto={abrirEmprestimo}
+          fechar={() => setAbrirEmprestimo(false)}
+          livroId={livro.id}
+        />
+      )}
 
       <main className="min-h-screen bg-[#eef5ff] p-4 md:p-8">
-
         <div className="max-w-7xl mx-auto space-y-6">
 
           {/* CABEÇALHO */}
@@ -128,11 +175,9 @@ export default function Livro() {
               shadow-xl
             "
           >
-
             <div className="absolute -right-20 -top-24 w-72 h-72 rounded-full bg-white/10" />
 
             <div className="relative p-6 md:p-8">
-
               <div className="flex items-center gap-3">
 
                 <Link
@@ -152,7 +197,6 @@ export default function Livro() {
                 </Link>
 
                 <div>
-
                   <p className="text-[10px] uppercase tracking-[0.18em] font-bold text-blue-100">
                     Biblioteca Tesouro Infantil
                   </p>
@@ -160,13 +204,10 @@ export default function Livro() {
                   <h1 className="text-xl md:text-2xl font-extrabold mt-1">
                     Detalhes do livro
                   </h1>
-
                 </div>
 
               </div>
-
             </div>
-
           </section>
 
           {/* FICHA PRINCIPAL */}
@@ -181,7 +222,6 @@ export default function Livro() {
               print:hidden
             "
           >
-
             <div className="grid lg:grid-cols-[420px_1fr]">
 
               {/* CAPA */}
@@ -193,7 +233,6 @@ export default function Livro() {
                   <div className="relative aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl bg-white">
 
                     {livro.capa ? (
-
                       <Image
                         src={livro.capa}
                         alt={livro.nome}
@@ -201,9 +240,7 @@ export default function Livro() {
                         sizes="350px"
                         className="object-cover"
                       />
-
                     ) : (
-
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
 
                         <div className="w-24 h-24 rounded-3xl bg-blue-50 flex items-center justify-center text-5xl">
@@ -215,7 +252,6 @@ export default function Livro() {
                         </p>
 
                       </div>
-
                     )}
 
                   </div>
@@ -225,17 +261,13 @@ export default function Livro() {
                   <div className="absolute top-4 left-4">
 
                     {disponivel ? (
-
                       <span className="bg-white/95 backdrop-blur-sm text-emerald-700 px-4 py-2 rounded-full text-xs font-extrabold shadow-lg">
                         ● Disponível
                       </span>
-
                     ) : (
-
                       <span className="bg-white/95 backdrop-blur-sm text-red-700 px-4 py-2 rounded-full text-xs font-extrabold shadow-lg">
                         ● Indisponível
                       </span>
-
                     )}
 
                   </div>
@@ -320,7 +352,6 @@ export default function Livro() {
                 {/* ALERTA */}
 
                 {!disponivel && (
-
                   <div className="mt-5 bg-red-50 border border-red-100 rounded-2xl p-4">
 
                     <p className="text-red-700 font-bold text-sm">
@@ -332,49 +363,46 @@ export default function Livro() {
                     </p>
 
                   </div>
-
                 )}
 
                 {/* AÇÕES */}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-7">
 
-                  {disponivel ? (
-
-                    <button
-                      type="button"
-                      onClick={() => setAbrirEmprestimo(true)}
-                      className="
-                        bg-blue-600
-                        hover:bg-blue-700
-                        text-white
-                        py-3.5
-                        rounded-xl
-                        font-extrabold
-                        transition
-                        shadow-sm
-                      "
-                    >
-                      Emprestar livro
-                    </button>
-
-                  ) : (
-
-                    <button
-                      type="button"
-                      disabled
-                      className="
-                        bg-gray-200
-                        text-gray-400
-                        py-3.5
-                        rounded-xl
-                        font-extrabold
-                        cursor-not-allowed
-                      "
-                    >
-                      Indisponível
-                    </button>
-
+                  {!verificandoAdmin && isAdmin && (
+                    disponivel ? (
+                      <button
+                        type="button"
+                        onClick={abrirModalEmprestimo}
+                        className="
+                          bg-blue-600
+                          hover:bg-blue-700
+                          text-white
+                          py-3.5
+                          rounded-xl
+                          font-extrabold
+                          transition
+                          shadow-sm
+                        "
+                      >
+                        Emprestar livro
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled
+                        className="
+                          bg-gray-200
+                          text-gray-400
+                          py-3.5
+                          rounded-xl
+                          font-extrabold
+                          cursor-not-allowed
+                        "
+                      >
+                        Indisponível
+                      </button>
+                    )
                   )}
 
                   <button
@@ -393,43 +421,47 @@ export default function Livro() {
                     Reservar livro
                   </button>
 
-                  <Link
-                    href={`/editar/${livro.id}`}
-                    className="
-                      bg-gray-100
-                      hover:bg-amber-100
-                      text-gray-700
-                      hover:text-amber-700
-                      border border-gray-200
-                      hover:border-amber-200
-                      py-3.5
-                      rounded-xl
-                      text-center
-                      font-extrabold
-                      transition
-                    "
-                  >
-                    Editar livro
-                  </Link>
+                  {!verificandoAdmin && isAdmin && (
+                    <Link
+                      href={`/editar/${livro.id}`}
+                      className="
+                        bg-gray-100
+                        hover:bg-amber-100
+                        text-gray-700
+                        hover:text-amber-700
+                        border border-gray-200
+                        hover:border-amber-200
+                        py-3.5
+                        rounded-xl
+                        text-center
+                        font-extrabold
+                        transition
+                      "
+                    >
+                      Editar livro
+                    </Link>
+                  )}
 
-                  <button
-                    type="button"
-                    onClick={imprimirEtiqueta}
-                    className="
-                      bg-gray-100
-                      hover:bg-emerald-100
-                      text-gray-700
-                      hover:text-emerald-700
-                      border border-gray-200
-                      hover:border-emerald-200
-                      py-3.5
-                      rounded-xl
-                      font-extrabold
-                      transition
-                    "
-                  >
-                    Imprimir etiqueta
-                  </button>
+                  {!verificandoAdmin && isAdmin && (
+                    <button
+                      type="button"
+                      onClick={imprimirEtiqueta}
+                      className="
+                        bg-gray-100
+                        hover:bg-emerald-100
+                        text-gray-700
+                        hover:text-emerald-700
+                        border border-gray-200
+                        hover:border-emerald-200
+                        py-3.5
+                        rounded-xl
+                        font-extrabold
+                        transition
+                      "
+                    >
+                      Imprimir etiqueta
+                    </button>
+                  )}
 
                 </div>
 
@@ -452,7 +484,6 @@ export default function Livro() {
               </div>
 
             </div>
-
           </section>
 
           {/* QR CODE */}
@@ -467,7 +498,6 @@ export default function Livro() {
               print:hidden
             "
           >
-
             <div className="flex flex-col lg:flex-row items-center justify-center gap-8">
 
               <div className="text-center lg:text-left">
@@ -503,7 +533,6 @@ export default function Livro() {
               </div>
 
             </div>
-
           </section>
 
           {/* HISTÓRICO */}
@@ -728,7 +757,6 @@ export default function Livro() {
           </div>
 
         </div>
-
       </main>
     </>
   );
