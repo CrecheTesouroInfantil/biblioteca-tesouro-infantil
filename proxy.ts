@@ -1,74 +1,73 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const EMAIL_ADMIN_BIBLIOTECA =
+  "crechetesouroinfantil@hotmail.com";
+
 export async function proxy(request: NextRequest) {
   const caminho = request.nextUrl.pathname;
 
   /*
-   * ============================================================
-   * ROTAS DA BIBLIOTECA
-   * ============================================================
+   * =========================================================
+   * ROTAS ADMINISTRATIVAS DA BIBLIOTECA
+   * =========================================================
    */
 
   const areaAdministrativaBiblioteca =
     caminho === "/admin" ||
     caminho.startsWith("/admin/") ||
+
     caminho === "/cadastro" ||
     caminho.startsWith("/cadastro/") ||
+
     caminho === "/editar" ||
     caminho.startsWith("/editar/") ||
+
     caminho === "/emprestimos" ||
     caminho.startsWith("/emprestimos/") ||
+
     caminho === "/reservas" ||
     caminho.startsWith("/reservas/") ||
+
     caminho === "/relatorios" ||
-    caminho.startsWith("/relatorios/");
+    caminho.startsWith("/relatorios/") ||
 
-  /*
-   * ============================================================
-   * ROTAS DO SISTEMA TESOURO INFANTIL
-   * ============================================================
-   */
-
-  const areaAdministrativaSistema =
-    caminho === "/" ||
-    caminho === "/alunos" ||
-    caminho.startsWith("/alunos/") ||
-    caminho === "/turmas" ||
-    caminho.startsWith("/turmas/") ||
-    caminho === "/matriculas" ||
-    caminho.startsWith("/matriculas/") ||
-    caminho === "/censo" ||
-    caminho.startsWith("/censo/") ||
     caminho === "/configuracoes" ||
     caminho.startsWith("/configuracoes/");
 
+
   /*
-   * ============================================================
-   * LOGIN DO SISTEMA
+   * =========================================================
+   * ROTAS ADMINISTRATIVAS DA SECRETARIA
    *
-   * A própria página de login precisa ficar pública.
-   * ============================================================
+   * IMPORTANTE:
+   * As rotas reais da Secretaria começam com /sistema
+   * =========================================================
+   */
+
+  const areaAdministrativaSistema =
+    caminho === "/sistema" ||
+    caminho.startsWith("/sistema/");
+
+
+  /*
+   * =========================================================
+   * PÁGINAS DE LOGIN
+   * =========================================================
    */
 
   const paginaLoginSistema =
     caminho === "/sistema-login";
 
-  /*
-   * ============================================================
-   * PÁGINA DE LOGIN DA BIBLIOTECA
-   *
-   * A própria página de login também precisa ficar pública.
-   * ============================================================
-   */
-
   const paginaLoginBiblioteca =
     caminho === "/login";
 
+
   /*
-   * ============================================================
-   * SE NÃO FOR UMA ROTA PROTEGIDA, NÃO FAZ NADA
-   * ============================================================
+   * =========================================================
+   * SE NÃO FOR UMA ÁREA PROTEGIDA,
+   * DEIXA PASSAR NORMALMENTE
+   * =========================================================
    */
 
   if (
@@ -80,10 +79,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+
   /*
-   * ============================================================
-   * BIBLIOTECA
-   * ============================================================
+   * =========================================================
+   * LOGIN / ROTAS ADMINISTRATIVAS DA BIBLIOTECA
+   * =========================================================
    */
 
   if (areaAdministrativaBiblioteca) {
@@ -127,21 +127,58 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabaseBiblioteca.auth.getUser();
 
+
+    /*
+     * NÃO ESTÁ LOGADA
+     *
+     * Usuária comum não pode entrar diretamente
+     * nas áreas administrativas.
+     */
+
     if (!user) {
       const url = request.nextUrl.clone();
 
-      url.pathname = "/login";
+      url.pathname = "/biblioteca";
 
       return NextResponse.redirect(url);
     }
 
+
+    /*
+     * ESTÁ LOGADA, MAS NÃO É ADMINISTRADORA
+     */
+
+    const emailUsuario =
+      user.email?.toLowerCase().trim();
+
+    const ehAdministradora =
+      emailUsuario ===
+      EMAIL_ADMIN_BIBLIOTECA.toLowerCase();
+
+
+    if (!ehAdministradora) {
+      const url = request.nextUrl.clone();
+
+      url.pathname = "/biblioteca";
+
+      return NextResponse.redirect(url);
+    }
+
+
+    /*
+     * É ADMINISTRADORA
+     *
+     * Pode acessar normalmente.
+     */
+
     return response;
   }
 
+
   /*
-   * ============================================================
-   * SISTEMA TESOURO INFANTIL
-   * ============================================================
+   * =========================================================
+   * ROTAS ADMINISTRATIVAS DA SECRETARIA
+   * =========================================================
    */
 
   if (areaAdministrativaSistema) {
@@ -196,16 +233,21 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+
   /*
-   * ============================================================
+   * =========================================================
    * PÁGINAS DE LOGIN
-   * ============================================================
-   *
-   * /login e /sistema-login ficam públicas.
+   * =========================================================
    */
+
+  if (paginaLoginSistema || paginaLoginBiblioteca) {
+    return NextResponse.next();
+  }
+
 
   return NextResponse.next();
 }
+
 
 export const config = {
   matcher: [
