@@ -18,31 +18,80 @@ export default function SistemaLoginPage() {
     setErro("");
     setEntrando(true);
 
-    const { error } =
-      await supabaseSistema.auth.signInWithPassword({
+    console.log("1. Iniciando login da Secretaria...");
+    console.log("2. E-mail:", email.trim());
+
+    try {
+      const loginPromise = supabaseSistema.auth.signInWithPassword({
         email: email.trim(),
         password: senha,
       });
 
-    if (error) {
-      console.error(error);
-      setErro("E-mail ou senha incorretos.");
-      setEntrando(false);
-      return;
-    }
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(
+            new Error(
+              "O Supabase não respondeu dentro de 10 segundos."
+            )
+          );
+        }, 10000);
+      });
 
-    router.push("/alunos");
-    router.refresh();
+      console.log("3. Aguardando resposta do Supabase...");
+
+      const { data, error } = await Promise.race([
+        loginPromise,
+        timeoutPromise,
+      ]);
+
+      console.log("4. Resposta recebida:", { data, error });
+
+      if (error) {
+        console.error("Erro no login da Secretaria:", error);
+
+        setErro(
+          error.message ||
+            "E-mail ou senha incorretos."
+        );
+
+        setEntrando(false);
+        return;
+      }
+
+      console.log("5. Login realizado com sucesso!");
+      console.log("Usuário:", data.user?.email);
+
+      router.replace("/sistema");
+      router.refresh();
+
+    } catch (error) {
+      console.error("ERRO NO LOGIN DA SECRETARIA:", error);
+
+      if (
+        error instanceof Error &&
+        error.message.includes("10 segundos")
+      ) {
+        setErro(
+          "O servidor da Secretaria não respondeu. Vamos verificar a conexão com o Supabase."
+        );
+      } else if (error instanceof Error) {
+        setErro(error.message);
+      } else {
+        setErro(
+          "Não foi possível entrar no sistema. Tente novamente."
+        );
+      }
+
+      setEntrando(false);
+    }
   }
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] flex items-center justify-center p-5">
       <div className="w-full max-w-md">
-
         <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
 
           <div className="bg-gradient-to-br from-blue-500 to-indigo-600 px-8 py-10 text-center text-white">
-
             <img
               src="/logo-creche.png"
               alt="Creche Tesouro Infantil"
@@ -56,7 +105,6 @@ export default function SistemaLoginPage() {
             <p className="mt-2 text-sm text-blue-100">
               Sistema de Gestão
             </p>
-
           </div>
 
           <form onSubmit={entrar} className="p-8">
@@ -86,7 +134,8 @@ export default function SistemaLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Digite seu e-mail"
                 required
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                disabled={entrando}
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
               />
             </div>
 
@@ -101,7 +150,8 @@ export default function SistemaLoginPage() {
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Digite sua senha"
                 required
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                disabled={entrando}
+                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-50"
               />
             </div>
 
@@ -110,7 +160,9 @@ export default function SistemaLoginPage() {
               disabled={entrando}
               className="w-full rounded-xl bg-blue-600 text-white px-5 py-3.5 font-extrabold hover:bg-blue-700 transition disabled:opacity-60"
             >
-              {entrando ? "Entrando..." : "🔐 Entrar no sistema"}
+              {entrando
+                ? "Entrando..."
+                : "🔐 Entrar no sistema"}
             </button>
 
             <p className="text-center text-xs text-slate-400 mt-6">
@@ -118,9 +170,7 @@ export default function SistemaLoginPage() {
             </p>
 
           </form>
-
         </div>
-
       </div>
     </main>
   );

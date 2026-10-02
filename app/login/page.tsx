@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -37,7 +38,29 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/admin");
+    /*
+     * Se o login foi solicitado por uma área específica,
+     * voltamos para essa área depois da autenticação.
+     *
+     * Exemplo:
+     * /login?redirect=/campanha/admin
+     *
+     * Caso não exista redirect, mantém o comportamento
+     * normal da Biblioteca.
+     */
+
+    const destino = searchParams.get("redirect");
+
+    if (
+      destino &&
+      destino.startsWith("/") &&
+      !destino.startsWith("//")
+    ) {
+      router.push(destino);
+    } else {
+      router.push("/admin");
+    }
+
     router.refresh();
   }
 
@@ -82,6 +105,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
+
       <div className="w-full max-w-md">
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -266,6 +290,7 @@ export default function LoginPage() {
         </p>
 
       </div>
+
     </main>
   );
 }

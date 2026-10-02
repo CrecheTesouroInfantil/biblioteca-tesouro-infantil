@@ -15,7 +15,12 @@ export default function RootLayoutShell({
     pathname.startsWith("/sistema/") ||
     pathname === "/sistema-login";
 
-  if (ehSistema) {
+  const ehEntrada =
+    pathname === "/" ||
+    pathname === "/campanha" ||
+    pathname.startsWith("/campanha/");
+
+  if (ehSistema || ehEntrada) {
     return <>{children}</>;
   }
 

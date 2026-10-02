@@ -74,6 +74,7 @@ export default function AdminCampanhaPage() {
   const [erro, setErro] = useState("");
 
   const [enviandoId, setEnviandoId] = useState<number | null>(null);
+  const [enviandoEmailId, setEnviandoEmailId] = useState<number | null>(null);
   const [mensagem, setMensagem] = useState("");
 
   const [imagemSelecionada, setImagemSelecionada] =
@@ -123,7 +124,7 @@ export default function AdminCampanhaPage() {
       if (error || !data.user) {
         setUsuarioLogado(null);
         setVerificandoSessao(false);
-        router.replace("/login");
+        router.replace("/login?redirect=/campanha/admin");
         return;
       }
 
@@ -138,7 +139,7 @@ export default function AdminCampanhaPage() {
 
         if (!sessao?.user) {
           setUsuarioLogado(null);
-          router.replace("/login");
+          router.replace("/login?redirect=/campanha/admin");
           return;
         }
 
@@ -194,6 +195,140 @@ export default function AdminCampanhaPage() {
       dateStyle: "short",
       timeStyle: "short",
     });
+  }
+
+  async function prepararEmail(crianca: Crianca) {
+    if (!crianca.adotante_email) {
+      setMensagem(
+        `⚠️ Não há e-mail cadastrado para o adotante de ${crianca.nome}.`
+      );
+      return;
+    }
+
+    if (!crianca.cartinha_url) {
+      setMensagem(
+        `⚠️ ${crianca.nome} ainda não possui cartinha ou desenho cadastrado.`
+      );
+      return;
+    }
+
+    setEnviandoEmailId(crianca.id);
+    setMensagem(`📧 Preparando o e-mail de ${crianca.nome}...`);
+
+    const idade = calcularIdade(crianca.data_nascimento);
+    const nomeAdotante = crianca.adotante_nome || "querido(a) adotante";
+    const assunto = `Campanha “Adote uma Criança” – ${crianca.nome}`;
+
+    const textoAlternativo = `Olá, ${nomeAdotante}!
+
+Parabéns! Você escolheu participar da campanha “Adote uma Criança” e presentear uma criança da Creche Tesouro Infantil. 💙
+
+🎁 Criança escolhida: ${crianca.nome}
+🎂 Idade: ${idade}
+🏫 Turma: ${crianca.turma}
+
+💌 A criança preparou uma cartinha com alguns desejos. Ela está logo abaixo nesta mensagem.
+
+O presente não precisa ser exatamente o que foi pedido na cartinha. O mais importante é que seja escolhido com carinho e que seja adequado à idade da criança.
+
+📅 Semana das Crianças: 05 a 09 de outubro de 2026.
+
+🎁 Entrega do presente: até 20/10/2026.
+
+Agradecemos imensamente por fazer parte dessa iniciativa e contribuir para tornar o Dia das Crianças ainda mais especial. ❤️
+
+Com carinho,
+
+Talita Cavalcante
+Creche Tesouro Infantil
+Campanha “Adote uma Criança”
+Parceria FENORD`;
+
+    const htmlEmail = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:24px;background:#f4f8fc;font-family:Arial,Helvetica,sans-serif;color:#334155;">
+  <div style="max-width:680px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e2e8f0;">
+    <div style="background:linear-gradient(135deg,#e9f7ff 0%,#fff0f7 100%);padding:24px;text-align:center;">
+      <img src="https://biblioteca-tesouro-infantil.vercel.app/campanha/banner-email-adote.png" alt="Campanha Adote uma Criança" style="display:block;width:100%;max-width:632px;height:auto;margin:0 auto;border:0;border-radius:18px;" />
+    </div>
+
+    <div style="padding:30px;">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#168be8;">Campanha Adote uma Criança</p>
+      <h1 style="margin:0 0 22px;font-size:28px;line-height:1.2;color:#123a78;">Olá, ${nomeAdotante}!</h1>
+
+      <p style="font-size:16px;line-height:1.7;color:#475569;">
+        Parabéns! Você escolheu participar da nossa campanha e presentear uma criança da <strong style="color:#123a78;">Creche Tesouro Infantil</strong>. 💙
+      </p>
+
+      <div style="margin:24px 0;padding:22px;border-radius:20px;background:#f1f8ff;border:1px solid #d8edff;">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#168be8;">Criança escolhida</p>
+        <p style="margin:0 0 12px;font-size:25px;font-weight:800;color:#123a78;">🎁 ${crianca.nome}</p>
+        <p style="margin:4px 0;font-size:15px;color:#475569;"><strong>Idade:</strong> ${idade}</p>
+        <p style="margin:4px 0;font-size:15px;color:#475569;"><strong>Turma:</strong> ${crianca.turma}</p>
+      </div>
+
+      <p style="font-size:16px;line-height:1.7;color:#475569;">💌 A criança preparou uma cartinha com alguns desejos. Confira abaixo:</p>
+
+      <div style="margin:22px 0;padding:12px;background:#f8fafc;border-radius:20px;text-align:center;border:1px solid #e2e8f0;">
+        <img src="${crianca.cartinha_url}" alt="Cartinha de ${crianca.nome}" style="display:block;max-width:100%;width:auto;height:auto;max-height:850px;margin:0 auto;border-radius:14px;" />
+      </div>
+
+      <p style="font-size:15px;line-height:1.7;color:#475569;">O presente não precisa ser exatamente o que foi pedido na cartinha. O mais importante é que seja escolhido com carinho e que seja adequado à idade da criança.</p>
+
+      <div style="margin-top:24px;padding:18px;border-radius:18px;background:#fff7fb;border:1px solid #ffd8e9;">
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#475569;"><strong>📅 Semana das Crianças:</strong> 05 a 09 de outubro de 2026.<br /><strong>🎁 Entrega do presente:</strong> até 20/10/2026.</p>
+      </div>
+
+      <p style="margin-top:24px;font-size:15px;line-height:1.7;color:#475569;">Agradecemos imensamente por fazer parte dessa iniciativa e contribuir para tornar o Dia das Crianças ainda mais especial. ❤️</p>
+
+      <p style="margin-top:28px;font-size:15px;line-height:1.7;color:#475569;">Com carinho,<br /><strong style="color:#123a78;">Creche Tesouro Infantil</strong><br />Campanha “Adote uma Criança”<br />Parceria FENORD</p>
+    </div>
+
+    <div style="padding:14px 20px;background:#123a78;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#ffffff;">Creche Tesouro Infantil • Topázio – Teófilo Otoni/MG</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const url =
+      `https://outlook.live.com/mail/deeplink/compose` +
+      `?to=${encodeURIComponent(crianca.adotante_email)}` +
+      `&subject=${encodeURIComponent(assunto)}`;
+
+    window.open(url, "_blank");
+
+    try {
+      if (navigator.clipboard && "ClipboardItem" in window) {
+        const item = new ClipboardItem({
+          "text/html": new Blob([htmlEmail], { type: "text/html" }),
+          "text/plain": new Blob([textoAlternativo], { type: "text/plain" }),
+        });
+
+        await navigator.clipboard.write([item]);
+
+        setMensagem(
+          `✅ E-mail preparado para ${nomeAdotante}. O Outlook foi aberto e a mensagem com a cartinha foi copiada. Basta colar no corpo do e-mail e enviar.`
+        );
+      } else {
+        await navigator.clipboard.writeText(textoAlternativo);
+        setMensagem(
+          `📧 Outlook aberto para ${nomeAdotante}. O texto foi copiado. Este navegador não permitiu copiar a cartinha formatada.`
+        );
+      }
+    } catch (error) {
+      console.error("Não foi possível copiar o e-mail:", error);
+      setMensagem(
+        `📧 Outlook aberto para ${nomeAdotante}. Não foi possível copiar automaticamente a mensagem completa.`
+      );
+    } finally {
+      setEnviandoEmailId(null);
+    }
   }
 
   async function atualizarPainel() {
@@ -268,7 +403,7 @@ export default function AdminCampanhaPage() {
         setMensagem(
           "❌ Sua sessão expirou. Faça login novamente para enviar a cartinha."
         );
-        router.replace("/login");
+        router.replace("/login?redirect=/campanha/admin");
         return;
       }
 
@@ -552,6 +687,7 @@ export default function AdminCampanhaPage() {
                       <th className="px-4 py-4">Nome do adotante</th>
                       <th className="px-4 py-4">E-mail</th>
                       <th className="px-4 py-4">Data da adoção</th>
+                      <th className="px-4 py-4">E-mail</th>
                     </tr>
                   </thead>
 
@@ -586,6 +722,36 @@ export default function AdminCampanhaPage() {
 
                         <td className="px-4 py-4 text-gray-600">
                           {formatarDataAdocao(crianca.data_adocao)}
+                        </td>
+
+                        <td className="px-4 py-4">
+                          <button
+                            type="button"
+                            disabled={
+                              enviandoEmailId === crianca.id ||
+                              !crianca.adotante_email ||
+                              !crianca.cartinha_url
+                            }
+                            onClick={() => prepararEmail(crianca)}
+                            title={
+                              !crianca.adotante_email
+                                ? "Não há e-mail do adotante"
+                                : !crianca.cartinha_url
+                                  ? "Cadastre a cartinha antes de enviar"
+                                  : "Preparar e-mail com a cartinha"
+                            }
+                            className={`whitespace-nowrap rounded-2xl px-4 py-3 text-xs font-black text-white shadow-sm transition ${
+                              enviandoEmailId === crianca.id
+                                ? "cursor-wait bg-gray-400"
+                                : !crianca.adotante_email || !crianca.cartinha_url
+                                  ? "cursor-not-allowed bg-gray-300"
+                                  : "bg-[#16A66A] hover:bg-[#128A58]"
+                            }`}
+                          >
+                            {enviandoEmailId === crianca.id
+                              ? "⏳ Preparando..."
+                              : "📧 Enviar e-mail"}
+                          </button>
                         </td>
                       </tr>
                     ))}
