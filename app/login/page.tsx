@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -13,17 +13,12 @@ export default function LoginPage() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const [carregando, setCarregando] = useState(false);
-  const [enviandoRecuperacao, setEnviandoRecuperacao] =
-    useState(false);
-
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState("");
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
 
     setErro("");
-    setSucesso("");
     setCarregando(true);
 
     const { error } =
@@ -33,6 +28,8 @@ export default function LoginPage() {
       });
 
     if (error) {
+      console.error(error);
+
       setErro("E-mail ou senha incorretos.");
       setCarregando(false);
       return;
@@ -64,51 +61,13 @@ export default function LoginPage() {
     router.refresh();
   }
 
-  async function recuperarSenha() {
-    setErro("");
-    setSucesso("");
-
-    if (!email.trim()) {
-      setErro(
-        "Digite seu e-mail antes de solicitar a recuperação da senha."
-      );
-      return;
-    }
-
-    setEnviandoRecuperacao(true);
-
-    const { error } =
-      await supabaseBrowser.auth.resetPasswordForEmail(
-        email.trim(),
-        {
-          redirectTo: `${window.location.origin}/redefinir-senha`,
-        }
-      );
-
-    if (error) {
-      console.log(error);
-
-      setErro(
-        "Não foi possível enviar o e-mail de recuperação."
-      );
-
-      setEnviandoRecuperacao(false);
-      return;
-    }
-
-    setSucesso(
-      "Enviamos um link de recuperação para seu e-mail. Verifique sua caixa de entrada."
-    );
-
-    setEnviandoRecuperacao(false);
-  }
-
   return (
     <main className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
-
       <div className="w-full max-w-md">
 
         <div className="bg-white rounded-3xl shadow-xl p-8">
+
+          {/* CABEÇALHO */}
 
           <div className="flex flex-col items-center text-center mb-8">
 
@@ -128,10 +87,14 @@ export default function LoginPage() {
 
           </div>
 
+          {/* FORMULÁRIO */}
+
           <form
             onSubmit={entrar}
             className="space-y-5"
           >
+
+            {/* E-MAIL */}
 
             <div>
 
@@ -161,6 +124,8 @@ export default function LoginPage() {
               />
 
             </div>
+
+            {/* SENHA */}
 
             <div>
 
@@ -226,39 +191,25 @@ export default function LoginPage() {
 
             </div>
 
-            <div className="flex justify-end">
-
-              <button
-                type="button"
-                onClick={recuperarSenha}
-                disabled={enviandoRecuperacao}
-                className="
-                  text-sm
-                  font-bold
-                  text-blue-600
-                  hover:text-blue-800
-                  disabled:text-gray-400
-                  hover:underline
-                "
-              >
-                {enviandoRecuperacao
-                  ? "Enviando..."
-                  : "Esqueci minha senha"}
-              </button>
-
-            </div>
+            {/* ERRO */}
 
             {erro && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm font-semibold">
+              <div
+                className="
+                  bg-red-50
+                  border border-red-200
+                  text-red-700
+                  rounded-xl
+                  p-3
+                  text-sm
+                  font-semibold
+                "
+              >
                 ❌ {erro}
               </div>
             )}
 
-            {sucesso && (
-              <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm font-semibold">
-                ✅ {sucesso}
-              </div>
-            )}
+            {/* BOTÃO */}
 
             <button
               type="submit"
@@ -290,7 +241,30 @@ export default function LoginPage() {
         </p>
 
       </div>
-
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-blue-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-xl p-10 text-center">
+            <img
+              src="/logo-creche.png"
+              alt="Creche Tesouro Infantil"
+              className="w-24 h-24 object-contain mx-auto mb-4"
+            />
+
+            <p className="text-gray-600 font-semibold">
+              Carregando...
+            </p>
+          </div>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
